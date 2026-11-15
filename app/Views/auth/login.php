@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($title ?? 'Masuk ke Sistem'); ?> - SIA Syiar Gemilang</title>
+    <!-- Favicon & Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= base_url('assets/img/favicon-32x32.png'); ?>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= base_url('assets/img/favicon-16x16.png'); ?>">
+    <link rel="shortcut icon" href="<?= base_url('favicon.ico'); ?>">
+    <link rel="apple-touch-icon" href="<?= base_url('assets/img/apple-touch-icon.png'); ?>">
+    <link rel="manifest" href="<?= base_url('manifest.json'); ?>">
+    <meta name="theme-color" content="#0066CC">
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -33,7 +41,7 @@
             background-color: #073B66;
             background-image:
                 linear-gradient(160deg, rgba(7, 59, 102, 0.55) 0%, rgba(0, 119, 212, 0.35) 55%, rgba(4, 30, 56, 0.85) 100%),
-                url('<?= base_url('assets/img/rgi.png'); ?>'),
+                url('<?= base_url('assets/img/tkje.jpg'); ?>'),
                 linear-gradient(135deg, #0077D4 0%, #073B66 100%);
             background-size: cover;
             background-position: center;
@@ -123,9 +131,7 @@
                 <!-- Header -->
                 <div class="rise mb-8" style="--i:0">
                     <a href="<?= base_url('/'); ?>" class="inline-flex items-center gap-3 mb-5 hover:opacity-90 transition" title="Kembali ke Beranda">
-                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand text-white shadow-md shadow-brand/25 shrink-0">
-                            <i class="fa-solid fa-graduation-cap text-xl"></i>
-                        </div>
+                        <img src="<?= base_url('assets/img/rgi.png'); ?>" alt="Logo Syiar Gemilang" class="w-12 h-12 rounded-xl object-contain shadow-md shadow-brand/25 shrink-0">
                         <div class="leading-tight">
                             <p class="text-lg font-extrabold tracking-tight text-slate-900">Syiar Gemilang</p>
                             <p class="text-xs text-slate-500">Sistem Informasi Akademik Rumah Gemilang Indonesia</p>
@@ -206,12 +212,12 @@
                         <p id="passwordError" class="hidden mt-1.5 text-xs text-[#991B1B]"></p>
                     </div>
 
-                    <!-- Link Bantuan -->
-                    <div>
-                        <!-- TODO: ganti href dengan route lupa sandi milik aplikasi, mis. base_url('/forgot-password') -->
-                        <!-- <a href="#" class="text-sm text-brand hover:underline focus:outline-none focus-visible:underline">
-                            Lupa nama pengguna atau kata sandi?
-                        </a> -->
+                    <!-- Link Bantuan Lupa Kata Sandi -->
+                    <div class="flex items-center justify-between text-xs pt-1">
+                        <span class="text-slate-500">Kendala masuk akun?</span>
+                        <button type="button" onclick="openForgotPasswordModal()" class="text-brand font-semibold hover:underline focus:outline-none cursor-pointer">
+                            <i class="fa-solid fa-key text-3xs mr-1"></i> Lupa kata sandi?
+                        </button>
                     </div>
 
                     <!-- Submit Button -->
@@ -422,6 +428,103 @@
             kick();
         });
     })();
+
+    // Lupa Password Modal Controls
+    function openForgotPasswordModal() {
+        const usernameVal = document.getElementById('username')?.value.trim() || '';
+        const modalInput = document.getElementById('forgotUsername');
+        if (modalInput && usernameVal) {
+            modalInput.value = usernameVal;
+        }
+        document.getElementById('modalForgotPassword').classList.remove('hidden');
+    }
+
+    function closeForgotPasswordModal() {
+        document.getElementById('modalForgotPassword').classList.add('hidden');
+    }
+
+    function sendForgotPasswordWa() {
+        const user = document.getElementById('forgotUsername')?.value.trim() || 'Akun Santri/Instruktur';
+        const msg = `Assalamu'alaikum Admin RGI. Saya mengalami kendala lupa kata sandi akun portal Syiar Gemilang. Mohon bantuan reset kata sandi untuk akun dengan Username / NIS: ${user}. Terima kasih.`;
+        const waUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(msg)}`;
+        window.open(waUrl, '_blank');
+        closeForgotPasswordModal();
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeForgotPasswordModal();
+        }
+    });
 </script>
+
+<!-- ===================== MODAL LUPA PASSWORD ===================== -->
+<div id="modalForgotPassword" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div onclick="closeForgotPasswordModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
+
+    <div class="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 z-10 space-y-4">
+        <!-- Modal Header -->
+        <div class="flex items-start justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Bantuan Lupa Kata Sandi</h3>
+                    <p class="text-xs text-slate-500">Pemulihan akses akun portal Syiar Gemilang</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeForgotPasswordModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer p-1">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Info Description -->
+        <div class="text-xs text-slate-600 space-y-2.5 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <p>
+                Untuk alasan keamanan data santri dan nilai akademik, reset kata sandi dilakukan secara terverifikasi melalui <strong>Administrator / Tata Usaha RGI</strong>.
+            </p>
+            <p>
+                Silakan ketikkan <strong>NIS</strong> atau <strong>Username</strong> Anda di bawah, lalu klik tombol untuk mengirim permohonan reset via WhatsApp Admin.
+            </p>
+        </div>
+
+        <!-- Input Username / NIS -->
+        <div>
+            <label for="forgotUsername" class="block text-xs font-semibold text-slate-700 mb-1">
+                Nomor Induk Santri (NIS) atau Username
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-id-badge text-xs"></i>
+                </div>
+                <input type="text" id="forgotUsername" placeholder="Contoh: RGI-35001 atau nama_pengguna" 
+                       class="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand">
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-2 pt-2">
+            <button type="button" onclick="sendForgotPasswordWa()" 
+                    class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                <span>Ajukan Reset Kata Sandi via WhatsApp</span>
+            </button>
+
+            <div class="flex items-center justify-between text-3xs text-slate-400 pt-1 px-1">
+                <span>Hotline: 0812-3456-7890</span>
+                <span>Email: diklat@rgi.or.id</span>
+            </div>
+        </div>
+
+        <!-- Close Button -->
+        <div class="pt-2 border-t border-slate-100 flex justify-end">
+            <button type="button" onclick="closeForgotPasswordModal()" 
+                    class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

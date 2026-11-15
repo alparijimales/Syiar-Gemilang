@@ -39,7 +39,7 @@
             ],
             'badge' => 'Lembaga Pendidikan E-RGI Syiar Gemilang',
             'title' => 'Portal Pengelolaan Nilai & Presensi Santri',
-            'subtitle' => 'Selamat Datang, <strong>' . esc(session()->get('nama')) . '</strong>! Kelola pencatatan evaluasi akademik 4 mapel, integrasi adab akhlaq 20%, serta presensi kelas kejuruan.',
+            'subtitle' => 'Selamat Datang, <strong>' . esc(session()->get('nama')) . '</strong>! Kelola pencatatan evaluasi akademik 5 mata diklat, integrasi adab akhlaq 20%, serta presensi kelas kejuruan.',
             'extra_action' => $extra_btn,
             'stats' => [
                 ['icon' => 'fa-solid fa-users', 'bg' => 'bg-sky-400/20 text-sky-200', 'value' => $total_siswa, 'label' => 'Santri Dibina'],
@@ -71,8 +71,8 @@
                 </div>
                 <div>
                     <p class="text-xs text-slate-500 font-medium">Aspek Penilaian</p>
-                    <h3 class="text-2xl font-bold text-slate-800"><?= esc($total_mapel); ?> Aspek</h3>
-                    <span class="text-3xs text-sky-600 font-semibold">4 Mapel + 1 Adab</span>
+                    <h3 class="text-2xl font-bold text-slate-800">6 Aspek</h3>
+                    <span class="text-3xs text-sky-600 font-semibold"><?= esc($total_mapel); ?> Mata Diklat + 1 Adab</span>
                 </div>
             </div>
 
@@ -108,7 +108,7 @@
                 <div>
                     <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
                         Petunjuk Penilaian Instruktur
-                        <span class="text-2xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-300">
+                        <span class="text-2xs bg-amber-500/10 text-amber-900 font-bold px-2 py-0.5 rounded border border-amber-500/30 font-mono">
                             Adab & Akhlaq: 20%
                         </span>
                     </h4>
@@ -169,7 +169,8 @@
                                     ];
                                     $bdg = $jTheme[$student['kelas']] ?? 'bg-blue-50 text-blue-700 border-blue-200';
                                 ?>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-3xs font-semibold border <?= $bdg; ?>">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-semibold border <?= $bdg; ?> shadow-2xs">
+                                    <i class="fa-solid fa-graduation-cap text-[10px]"></i>
                                     <?= esc($student['kelas']); ?>
                                 </span>
                             </td>
@@ -180,7 +181,7 @@
                                 <?= esc($student['adab_akhlaq'] ?? 85); ?>
                             </td>
                             <td class="py-3 px-3 border-r border-slate-200 text-center">
-                                <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span class="font-bold text-slate-800 text-xs font-mono">
                                     <?= esc($student['kehadiran'] ?? 95); ?>%
                                 </span>
                             </td>

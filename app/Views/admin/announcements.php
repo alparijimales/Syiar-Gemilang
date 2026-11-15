@@ -85,9 +85,9 @@
                     </div>
 
                     <!-- Category Filter & Action Button -->
-                    <div class="flex items-center gap-2.5">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
                         <select id="kategoriFilter" onchange="filterAnnouncements()" 
-                                class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066CC]/30 focus:border-[#0066CC]">
+                                class="w-full sm:w-auto text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0066CC]/30 focus:border-[#0066CC]">
                             <option value="">Semua Kategori</option>
                             <option value="resmi">Acara Resmi</option>
                             <option value="tidak_resmi">Kegiatan Santri (Tidak Resmi)</option>
@@ -95,7 +95,7 @@
                         </select>
 
                         <button type="button" onclick="openAddModal()" 
-                                class="px-4 py-2 bg-[#0066CC] hover:bg-[#0052A3] text-white rounded-xl text-xs font-semibold shadow-sm shadow-[#0066CC]/25 flex items-center gap-2 transition cursor-pointer shrink-0">
+                                class="w-full sm:w-auto justify-center px-4 py-2 bg-[#0066CC] hover:bg-[#0052A3] text-white rounded-xl text-xs font-semibold shadow-sm shadow-[#0066CC]/25 flex items-center gap-2 transition cursor-pointer">
                             <i class="fa-solid fa-plus"></i>
                             <span>Buat Pengumuman Baru</span>
                         </button>
@@ -189,20 +189,28 @@
                                         </td>
                                         <td class="py-3.5 px-4 text-center">
                                             <?php if (!empty($item['is_active'])) : ?>
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-3xs font-bold bg-white text-emerald-700 border border-slate-200 shadow-2xs">
                                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Tampil
                                                 </span>
                                             <?php else : ?>
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-slate-100 text-slate-500 border border-slate-200">
+                                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-3xs font-semibold bg-white text-slate-500 border border-slate-200 shadow-2xs">
                                                     <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Arsip
                                                 </span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="py-3.5 px-4 text-center">
                                             <div class="inline-flex items-center justify-center gap-1.5">
+                                                <!-- Broadcast Push Notification to Wali & Siswa Button -->
+                                                <button type="button" 
+                                                        onclick="broadcastPushAnnouncement(<?= htmlspecialchars(json_encode($item), ENT_QUOTES, 'UTF-8'); ?>)" 
+                                                        title="Kirim Push Notification Pengumuman ke HP Wali Santri"
+                                                        class="w-7 h-7 rounded-lg bg-sky-50 hover:bg-[#0066CC] hover:text-white text-[#0066CC] border border-sky-200 flex items-center justify-center text-xs transition cursor-pointer">
+                                                    <i class="fa-solid fa-bell"></i>
+                                                </button>
+
                                                 <!-- Edit Button -->
                                                 <button type="button" 
-                                                        onclick='openEditModal(<?= json_encode($item, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>)' 
+                                                        onclick="openEditModal(<?= htmlspecialchars(json_encode($item), ENT_QUOTES, 'UTF-8'); ?>)" 
                                                         title="Edit Pengumuman"
                                                         class="w-7 h-7 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center text-xs transition cursor-pointer">
                                                     <i class="fa-solid fa-pen-to-square"></i>
@@ -220,7 +228,7 @@
 
                                                 <!-- Delete Button -->
                                                 <button type="button" 
-                                                        onclick="openDeleteModal(<?= $item['id']; ?>, '<?= esc(addslashes($item['judul'])); ?>')" 
+                                                        onclick="openDeleteModal(<?= (int)$item['id']; ?>, <?= htmlspecialchars(json_encode($item['judul'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>)" 
                                                         title="Hapus Pengumuman"
                                                         class="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 flex items-center justify-center text-xs transition cursor-pointer">
                                                     <i class="fa-solid fa-trash-can"></i>
@@ -470,6 +478,44 @@
     </div>
 </div>
 
+<!-- Push Notification Confirmation Modal -->
+<div id="pushNotificationModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+        <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-sky-50 text-[#0066CC] border border-sky-200 flex items-center justify-center text-xl shrink-0 shadow-xs">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Kirim Push Notification</h3>
+                <p class="text-xs text-slate-500">Siaran notifikasi langsung ke smartphone santri & wali</p>
+            </div>
+        </div>
+
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <span class="text-3xs uppercase tracking-wider font-bold text-slate-400">Pengumuman:</span>
+            <p id="pushModalJudul" class="text-sm font-bold text-slate-800 leading-snug"></p>
+            <div class="flex items-center gap-2 pt-1 text-2xs text-slate-500">
+                <span id="pushModalKategori" class="px-2 py-0.5 rounded-md font-semibold bg-white border border-slate-200"></span>
+                <span id="pushModalPekan" class="text-slate-600"></span>
+            </div>
+        </div>
+
+        <div class="text-xs text-slate-600 space-y-1 leading-relaxed">
+            <p>Pengumuman ini akan disiarkan ke seluruh perangkat aktif melalui kanal push notifikasi.</p>
+            <p class="text-2xs text-slate-400">Penerima: Semua Santri & Wali Santri RGI Syiar Gemilang.</p>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+            <button type="button" onclick="closePushModal()" class="flex-1 py-2.5 px-3 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-100 transition text-xs font-semibold cursor-pointer">
+                Batal
+            </button>
+            <button type="button" onclick="submitPushNotification()" id="btnSubmitPush" class="flex-1 py-2.5 px-3 bg-[#0066CC] hover:bg-[#0052A3] text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-paper-plane text-2xs"></i> Kirim Notifikasi
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     function filterAnnouncements() {
         const query = document.getElementById('searchInput').value.toLowerCase();
@@ -534,5 +580,48 @@
     function closeDeleteModal() {
         document.getElementById('deleteModal').classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
+    }
+
+    let currentPushItem = null;
+
+    function broadcastPushAnnouncement(item) {
+        currentPushItem = item;
+        document.getElementById('pushModalJudul').textContent = item.judul || '';
+        const katBadge = document.getElementById('pushModalKategori');
+        katBadge.textContent = (item.kategori || 'resmi').toUpperCase();
+        document.getElementById('pushModalPekan').textContent = item.pekan_ke || 'Pekan Ini';
+
+        document.getElementById('pushNotificationModal').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closePushModal() {
+        document.getElementById('pushNotificationModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        currentPushItem = null;
+    }
+
+    function submitPushNotification() {
+        if (!currentPushItem) return;
+        const item = currentPushItem;
+
+        try {
+            const channel = new BroadcastChannel('syiar_announcements');
+            channel.postMessage({
+                type: 'NEW_ANNOUNCEMENT',
+                payload: item
+            });
+        } catch(e) {}
+
+        const f = document.createElement('form');
+        f.method = 'POST';
+        f.action = '<?= base_url('admin/announcements/broadcast-push'); ?>/' + item.id;
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '<?= csrf_token(); ?>';
+        csrf.value = '<?= csrf_hash(); ?>';
+        f.appendChild(csrf);
+        document.body.appendChild(f);
+        f.submit();
     }
 </script>

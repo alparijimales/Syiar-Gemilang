@@ -168,9 +168,10 @@ foreach ($sesi_kehadiran as $s) {
                 <div>
                     <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
                         Presensi Berjalan Dinamis Sesuai Kalender & Tanggal
-                        <span class="text-2xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-300">
-                            <?= $periodeAwal; ?> - <?= $periodeAkhir; ?>
-                        </span>
+                        <div class="inline-flex items-center divide-x divide-slate-200 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-2xs">
+  <span class="px-2.5 py-1"><?= $periodeAwal; ?></span>
+  <span class="px-2.5 py-1 text-slate-500"><?= $periodeAkhir; ?></span>
+</div>
                     </h4>
                     <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">
                         Sistem mencatat presensi secara <strong class="text-brand-deep">spesifik per tanggal realtime</strong>. Anda dapat melihat <strong>akumulasi 1 bulan</strong> (total <?= count($sesi_kehadiran); ?> sesi kegiatan), atau memfilter untuk memeriksa status presensi santri pada <strong>hari ini (<?= $todayFullIndo; ?>)</strong>, kemarin, maupun tanggal tertentu.
@@ -178,35 +179,123 @@ foreach ($sesi_kehadiran as $s) {
                 </div>
             </div>
             <div class="flex items-center gap-2 shrink-0 self-end md:self-auto">
-                <span class="text-xs font-semibold text-slate-600 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs">
-                    <i class="fa-solid fa-calendar-check text-emerald-600 mr-1.5"></i>Hari Ini: <?= $todayFullIndo; ?>
-                </span>
+                <div class="inline-flex items-center divide-x divide-slate-200 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-2xs">
+                    <span class="px-2.5 py-1 text-slate-500"><i class="fa-solid fa-calendar-check text-emerald-600 mr-1.5"></i>Hari Ini</span>
+                    <span class="px-2.5 py-1 font-semibold text-slate-700"><?= $todayFullIndo; ?></span>
+                </div>
             </div>
         </div>
 
-        <!-- Section: Riwayat Sesi Pertemuan (1 Bulan Terakhir) -->
+        <!-- Section: Riwayat Sesi Pertemuan (Elegan & Minimalis sesuai Desain Mockup) -->
+        <?php
+        $sesiPreparedList = [];
+        foreach ($sesi_kehadiran as $sesi) {
+            $tgl = $sesi['tanggal'];
+            $dayIndo = $daftarHariIndo[date('D', strtotime($tgl))] ?? date('D', strtotime($tgl));
+            $d = date('d', strtotime($tgl));
+            $m = $daftarBulanIndo[date('m', strtotime($tgl))] ?? date('M', strtotime($tgl));
+            $y = date('Y', strtotime($tgl));
+            $tglFormatted = "{$dayIndo}, {$d} {$m} {$y}";
+            
+            $cleanWaktu = trim(str_ireplace('WIB', '', $sesi['waktu']));
+            
+            $totPeserta = (int)$sesi['total_hadir'] + (int)($sesi['total_telat'] ?? 0) + (int)$sesi['total_sakit'] + (int)$sesi['total_alpa'];
+            if ($totPeserta === 0) {
+                $totPeserta = (int)($total_siswa ?: 50);
+            }
+            $persen = $totPeserta > 0 ? round(($sesi['total_hadir'] / $totPeserta) * 100, 1) : 100;
+            
+            $rawNama = $sesi['nama_sesi'];
+            $judul = $rawNama;
+            $pengajar = '';
+            if (strpos($rawNama, ' - ') !== false) {
+                $partsNama = explode(' - ', $rawNama, 2);
+                $judul = trim($partsNama[0]);
+                $pengajar = trim($partsNama[1]);
+            }
+            
+            $rawKet = $sesi['keterangan'] ?? '';
+            $materi = $rawKet;
+            if (strpos($rawKet, '|') !== false) {
+                $partsKet = explode('|', $rawKet);
+                $p1 = trim($partsKet[0]);
+                $p2 = trim($partsKet[1]);
+                if (stripos($p1, 'Pengampu:') !== false) {
+                    if (empty($pengajar)) {
+                        $pengajar = trim(str_ireplace('Pengampu:', '', $p1));
+                    }
+                    $materi = $p2;
+                } elseif (stripos($p2, 'Pengampu:') !== false) {
+                    if (empty($pengajar)) {
+                        $pengajar = trim(str_ireplace('Pengampu:', '', $p2));
+                    }
+                    $materi = $p1;
+                }
+            }
+            
+            if (empty($pengajar)) {
+                $pengajar = 'Ustadz Kamal Malawi';
+            }
+            if (empty($materi)) {
+                $materi = 'Sesi Pembelajaran Praktikum';
+            }
+            
+            $sesiPreparedList[] = [
+                'id'             => (int)$sesi['id'],
+                'nama_sesi'      => $sesi['nama_sesi'],
+                'judul'          => $judul,
+                'materi'         => $materi,
+                'pengajar'       => $pengajar,
+                'lokasi'         => $sesi['lokasi'] ?: 'Aula Serbaguna',
+                'tanggal'        => $sesi['tanggal'],
+                'tanggal_format' => $tglFormatted,
+                'waktu'          => $cleanWaktu,
+                'waktu_raw'      => $sesi['waktu'],
+                'total_hadir'    => (int)$sesi['total_hadir'],
+                'total_telat'    => (int)($sesi['total_telat'] ?? 0),
+                'total_sakit'    => (int)$sesi['total_sakit'],
+                'total_alpa'     => (int)$sesi['total_alpa'],
+                'total_peserta'  => $totPeserta,
+                'persentase'     => $persen,
+                'keterangan'     => $sesi['keterangan'] ?? '',
+            ];
+        }
+        ?>
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                 <div>
                     <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-brand"></i> Riwayat Sesi Pertemuan
-                        <span id="sesiCountBadge" class="text-xs font-bold text-brand bg-brand-light border border-brand-border px-2 py-0.5 rounded-full">
+                        <span id="sesiCountBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 shadow-2xs">
                             <?= count($sesi_kehadiran); ?> Sesi
                         </span>
                     </h3>
                     <p class="text-xs text-slate-500">Daftar seluruh sesi kegiatan halaqah, pembelajaran teori, dan praktikum yang telah dilaksanakan.</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <!-- Toggle Tampilan: Kartu vs Tabel -->
+                    <div class="inline-flex items-center p-0.5 rounded-lg bg-slate-100 border border-slate-200 text-xs">
+                        <button type="button" id="btnViewCards" onclick="switchSesiView('cards')" class="px-2.5 py-1 rounded-md bg-white text-brand shadow-2xs font-semibold flex items-center gap-1.5 cursor-pointer" title="Tampilan Kartu Elegan">
+                            <i class="fa-solid fa-grip"></i> <span class="hidden sm:inline">Kartu</span>
+                        </button>
+                        <button type="button" id="btnViewTable" onclick="switchSesiView('table')" class="px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-800 font-medium flex items-center gap-1.5 cursor-pointer" title="Tampilan Tabel Minimalis">
+                            <i class="fa-solid fa-table-list"></i> <span class="hidden sm:inline">Tabel</span>
+                        </button>
+                    </div>
+
                     <button type="button" onclick="openAddSesiModal()" class="bg-brand hover:bg-brand-dark text-white text-xs font-semibold px-3.5 py-2 rounded-lg shadow-xs flex items-center gap-1.5 transition shrink-0 cursor-pointer">
-                        <i class="fa-solid fa-plus"></i> Catat Sesi Baru
+                        <i class="fa-solid fa-plus text-xs"></i> Catat Sesi Baru
                     </button>
                 </div>
             </div>
 
-            <!-- Filter Tanggal & Minggu untuk Sesi (Otomatis & Realtime) -->
+            <!-- Filter Tanggal, Pencarian & Realtime Datepicker -->
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1">
-                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                    <span class="text-slate-400 font-medium shrink-0"><i class="fa-solid fa-filter mr-1"></i>Filter Sesi:</span>
+                <!-- Filter Pills -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    <span class="text-slate-400 font-medium shrink-0 flex items-center gap-1">
+                        <i class="fa-solid fa-filter text-slate-400 text-[11px]"></i> Filter Sesi:
+                    </span>
                     <button type="button" onclick="filterSesiByFilter('all', event)" id="btnSesiAll" class="btn-filter-sesi px-2.5 py-1 rounded-lg bg-brand text-white font-semibold shadow-xs transition shrink-0 cursor-pointer">
                         Semua (<?= count($sesi_kehadiran); ?>)
                     </button>
@@ -226,90 +315,65 @@ foreach ($sesi_kehadiran as $s) {
                     <?php endforeach; ?>
                 </div>
 
-                <!-- Input Pilih Tanggal Sesi Spesifik (Realtime Datepicker) -->
-                <div class="flex items-center gap-2 text-xs shrink-0 self-end lg:self-auto">
-                    <span class="text-slate-500 font-medium"><i class="fa-regular fa-calendar text-brand mr-1"></i>Pilih Tanggal:</span>
-                    <input type="date" id="inputCustomDateSesi" value="<?= $todayRealtimeDate; ?>" onchange="filterSesiByCustomDate(this.value)" class="px-2.5 py-1 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand bg-white cursor-pointer" title="Pilih Tanggal Sesi Realtime">
+                <!-- Search Input & Custom Date Picker -->
+                <div class="flex items-center gap-2.5 text-xs shrink-0 self-start lg:self-auto flex-wrap">
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-400"></i>
+                        <input type="text" id="searchSesiInput" oninput="onSearchSesiChange(this.value)" placeholder="Cari sesi atau materi..." class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand w-44 sm:w-56 bg-white placeholder:text-slate-400">
+                    </div>
+
+                    <!-- Date Picker -->
+                    <div class="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+                        <i class="fa-regular fa-calendar text-brand"></i>
+                        <span class="hidden sm:inline">Pilih Tanggal:</span>
+                        <input type="date" id="inputCustomDateSesi" value="<?= $todayRealtimeDate; ?>" onchange="filterSesiByCustomDate(this.value)" class="px-2.5 py-1 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand bg-white cursor-pointer" title="Pilih Tanggal Sesi Realtime">
+                    </div>
                 </div>
             </div>
 
-            <!-- Scrollable Grid Sesi Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto pr-1" id="sesiContainer">
-                <div id="sesiEmptyState" class="hidden col-span-full py-10 text-center bg-slate-50 rounded-xl border border-dashed border-slate-300">
-                    <div class="w-12 h-12 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mx-auto mb-2 text-xl">
-                        <i class="fa-solid fa-calendar-xmark"></i>
-                    </div>
-                    <p class="text-sm font-bold text-slate-700">Tidak ada sesi pertemuan pada tanggal ini</p>
-                    <p class="text-xs text-slate-500 mt-0.5">Pilih tanggal lain atau klik "Catat Sesi Baru" untuk membuat sesi kegiatan baru.</p>
+            <!-- Empty State -->
+            <div id="sesiEmptyState" class="hidden py-12 text-center bg-slate-50/80 rounded-xl border border-dashed border-slate-300">
+                <div class="w-12 h-12 rounded-full bg-slate-200/80 text-slate-500 flex items-center justify-center mx-auto mb-2 text-xl">
+                    <i class="fa-solid fa-calendar-xmark"></i>
                 </div>
-                <?php 
-                    $daysIndo = ['Mon' => 'Senin', 'Tue' => 'Selasa', 'Wed' => 'Rabu', 'Thu' => 'Kamis', 'Fri' => 'Jumat', 'Sat' => 'Sabtu', 'Sun' => 'Minggu'];
-                ?>
-                <?php foreach ($sesi_kehadiran as $sesi): ?>
-                    <?php
-                        $totPeserta = $sesi['total_hadir'] + ($sesi['total_telat'] ?? 0) + $sesi['total_sakit'] + $sesi['total_alpa'];
-                        $persenHadir = $totPeserta > 0 ? round(($sesi['total_hadir'] / $totPeserta) * 100, 1) : 100;
-                        $tglSesi = $sesi['tanggal'];
-                        $hariName = $daysIndo[date('D', strtotime($tglSesi))] ?? date('D', strtotime($tglSesi));
-                        $isTauhid = stripos($sesi['nama_sesi'], 'Tauhid') !== false;
-                    ?>
-                    <div class="card-sesi p-4 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-brand/40 transition shadow-2xs flex flex-col justify-between" data-date="<?= esc($tglSesi); ?>">
-                        <div>
-                            <div class="flex items-start justify-between gap-2 mb-2">
-                                <div class="flex items-center gap-1.5 min-w-0">
-                                    <span class="w-6 h-6 rounded-md <?= $isTauhid ? 'bg-brand-light text-brand' : 'bg-emerald-100 text-emerald-700'; ?> flex items-center justify-center text-xs font-bold shrink-0">
-                                        <i class="fa-solid <?= $isTauhid ? 'fa-book-quran' : 'fa-kaaba'; ?>"></i>
-                                    </span>
-                                    <h4 class="text-sm font-bold text-slate-800 line-clamp-1" title="<?= esc($sesi['nama_sesi']); ?>">
-                                        <?= esc($sesi['nama_sesi']); ?>
-                                    </h4>
-                                </div>
-                                <span class="text-2xs font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
-                                    <?= $persenHadir; ?>% Hadir
-                                </span>
-                            </div>
+                <p class="text-sm font-bold text-slate-700">Tidak ada sesi pertemuan yang sesuai</p>
+                <p class="text-xs text-slate-500 mt-0.5">Coba sesuaikan kata kunci pencarian, filter tanggal, atau klik "Catat Sesi Baru".</p>
+            </div>
 
-                            <div class="space-y-1 text-xs text-slate-500 mb-3">
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-calendar text-slate-400 w-4"></i>
-                                    <span class="font-semibold text-slate-700"><?= $hariName; ?>, <?= date('d M Y', strtotime($sesi['tanggal'])); ?></span>
-                                    <span class="text-slate-300">•</span>
-                                    <span class="font-mono text-brand font-bold"><?= esc($sesi['waktu']); ?></span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-location-dot text-slate-400 w-4"></i>
-                                    <span class="truncate font-medium text-slate-600"><?= esc($sesi['lokasi']); ?></span>
-                                </div>
-                                <?php if (!empty($sesi['keterangan'])): ?>
-                                    <div class="flex items-center gap-2 text-3xs text-slate-600 mt-1">
-                                        <i class="fa-solid fa-chalkboard-user text-brand w-4"></i>
-                                        <span class="truncate font-semibold"><?= esc($sesi['keterangan']); ?></span>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+            <!-- View 1: 2-Column Minimalist Grid of Cards (Persis seperti Image Mockup) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4" id="sesiCardsGrid">
+                <!-- Di-render secara dinamis via JS -->
+            </div>
 
-                        <!-- Breakdown Pills (Hadir, Telat, Sakit, Absen) -->
-                        <div class="grid grid-cols-4 gap-1.5 pt-2.5 border-t border-slate-200/70 text-center text-2xs">
-                            <div class="bg-emerald-50 border border-emerald-200 rounded p-1">
-                                <span class="text-3xs text-emerald-600 block font-semibold">Hadir</span>
-                                <span class="font-bold text-emerald-800"><?= $sesi['total_hadir']; ?></span>
-                            </div>
-                            <div class="bg-amber-50 border border-amber-200 rounded p-1">
-                                <span class="text-3xs text-amber-600 block font-semibold">Telat</span>
-                                <span class="font-bold text-amber-800"><?= $sesi['total_telat'] ?? 0; ?></span>
-                            </div>
-                            <div class="bg-sky-50 border border-sky-200 rounded p-1">
-                                <span class="text-3xs text-sky-600 block font-semibold">Sakit</span>
-                                <span class="font-bold text-sky-800"><?= $sesi['total_sakit']; ?></span>
-                            </div>
-                            <div class="bg-rose-50 border border-rose-200 rounded p-1">
-                                <span class="text-3xs text-rose-600 block font-semibold">Absen</span>
-                                <span class="font-bold text-rose-800"><?= $sesi['total_alpa']; ?></span>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+            <!-- View 2: Minimalist Table View (Alternatif Mode Tampilan) -->
+            <div class="hidden overflow-x-auto rounded-xl border border-slate-200 shadow-2xs" id="sesiTableView">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/80 border-b border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            <th class="py-3 px-3.5 text-center w-12 border-r border-slate-200">No</th>
+                            <th class="py-3 px-4 border-r border-slate-200 w-44">Tanggal & Waktu</th>
+                            <th class="py-3 px-4 border-r border-slate-200">Sesi & Materi</th>
+                            <th class="py-3 px-4 border-r border-slate-200 w-48">Pengajar & Lokasi</th>
+                            <th class="py-3 px-4 text-center border-r border-slate-200 w-36">Kehadiran</th>
+                            <th class="py-3 px-4 text-center border-r border-slate-200 w-48">Breakdown</th>
+                            <th class="py-3 px-3 text-center w-28">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs divide-y divide-slate-100" id="sesiTableBody">
+                        <!-- Di-render via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Footer (Persis seperti Image Mockup) -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs">
+                <div class="text-slate-500 font-medium" id="sesiPaginationInfo">
+                    Menampilkan 1 sampai 6 dari <?= count($sesi_kehadiran); ?> sesi
+                </div>
+                <div class="flex items-center gap-1.5 self-center sm:self-auto" id="sesiPaginationButtons">
+                    <!-- Populated dynamically via JS -->
+                </div>
             </div>
         </div>
 
@@ -364,13 +428,13 @@ foreach ($sesi_kehadiran as $s) {
                             <th class="py-3 px-3 border-r border-slate-200 w-16">ID</th>
                             <th class="py-3 px-3 border-r border-slate-200">Nama Santri</th>
                             <th class="py-3 px-3 border-r border-slate-200">Kelas / Jurusan</th>
-                            <th class="py-3 px-3 text-center border-r border-slate-200 bg-brand-light text-brand-deep w-64">
+                            <th class="py-3 px-3 text-center border-r border-slate-200 bg-slate-100/80 text-slate-800 w-64 tracking-wider text-[11px]">
                                 Catat Kehadiran (Pilih Sesi)
                             </th>
-                            <th class="py-3 px-3 text-center border-r border-slate-200 bg-slate-100/60 w-56" id="thRekapHeader">
+                            <th class="py-3 px-3 text-center border-r border-slate-200 bg-slate-100/60 text-slate-800 w-56 tracking-wider text-[11px]" id="thRekapHeader">
                                 Rekap 1 Bulan (<?= count($sesi_kehadiran); ?> Sesi)
                             </th>
-                            <th class="py-3 px-3 text-center border-r border-slate-200 bg-emerald-50/60 text-emerald-900 w-24">
+                            <th class="py-3 px-3 text-center border-r border-slate-200 bg-slate-100/80 text-slate-800 w-24 tracking-wider text-[11px]">
                                 Kehadiran (%)
                             </th>
                             <th class="py-3 px-3 text-center w-28">Riwayat</th>
@@ -394,7 +458,7 @@ foreach ($sesi_kehadiran as $s) {
                                 $statusLabel = 'Cukup';
                             }
                         ?>
-                        <tr class="row-santri <?= $idx % 2 === 1 ? 'bg-slate-50/70' : 'bg-white'; ?> hover:bg-brand-light/50 transition" data-nama="<?= strtolower(esc($s['nama'])); ?>" data-kelas="<?= esc($s['kelas']); ?>">
+                        <tr class="row-santri <?= $idx % 2 === 1 ? 'bg-slate-50/70' : 'bg-white'; ?> hover:bg-slate-100/50 transition" data-nama="<?= strtolower(esc($s['nama'])); ?>" data-kelas="<?= esc($s['kelas']); ?>">
                             <td class="py-3 px-3 text-center border-r border-slate-200 font-bold text-xs text-slate-500"><?= $idx + 1; ?></td>
                             <td class="py-3 px-3 border-r border-slate-200 font-mono text-xs text-slate-500 font-semibold"><?= esc($s['id']); ?></td>
                             <td class="py-3 px-3 border-r border-slate-200 font-medium text-slate-800">
@@ -417,63 +481,64 @@ foreach ($sesi_kehadiran as $s) {
                                 $bdgK = $jThemeKehadiran[$s['kelas']] ?? 'bg-blue-50 text-blue-700 border-blue-200';
                             ?>
                             <td class="py-3 px-3 border-r border-slate-200 text-xs">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-3xs font-semibold border <?= $bdgK; ?>">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-semibold border <?= $bdgK; ?> shadow-2xs">
+                                    <i class="fa-solid fa-graduation-cap text-[10px]"></i>
                                     <?= esc($s['kelas']); ?>
                                 </span>
                             </td>
                             
-                            <!-- Pilihan Tombol Kehadiran: Hadir, Telat, Sakit, Absen -->
-                            <td class="py-2.5 px-3 border-r border-slate-200 text-center bg-brand-light/30">
-                                <div class="inline-flex items-center gap-1.5">
+                            <!-- Pilihan Tombol Kehadiran: Segmented Micro-Toolbar Elegan -->
+                            <td class="py-2.5 px-3 border-r border-slate-200 text-center bg-slate-50/50">
+                                <div class="inline-flex items-center p-0.5 rounded-lg bg-slate-100/90 border border-slate-200/90 shadow-2xs divide-x divide-slate-200">
                                     <!-- Tombol Hadir -->
                                     <button type="button" 
                                         onclick='openPilihSesiModal(<?= json_encode($s); ?>, "Hadir")'
                                         title="Tandai Hadir"
-                                        class="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-300 shadow-2xs transition flex items-center gap-1">
-                                        <i class="fa-solid fa-check"></i> Hadir
+                                        class="px-2 py-1 text-2xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-white rounded transition-all flex items-center gap-1 cursor-pointer">
+                                        <i class="fa-solid fa-check text-emerald-600 text-[10px]"></i> Hadir
                                     </button>
 
                                     <!-- Tombol Telat -->
                                     <button type="button" 
                                         onclick='openPilihSesiModal(<?= json_encode($s); ?>, "Telat")'
                                         title="Tandai Terlambat"
-                                        class="px-2.5 py-1 rounded-md text-xs font-bold bg-amber-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-amber-300 shadow-2xs transition flex items-center gap-1">
-                                        <i class="fa-solid fa-clock"></i> Telat
+                                        class="px-2 py-1 text-2xs font-bold text-slate-700 hover:text-amber-700 hover:bg-white rounded transition-all flex items-center gap-1 cursor-pointer">
+                                        <i class="fa-solid fa-clock text-amber-500 text-[10px]"></i> Telat
                                     </button>
 
                                     <!-- Tombol Sakit -->
                                     <button type="button" 
                                         onclick='openPilihSesiModal(<?= json_encode($s); ?>, "Sakit")'
                                         title="Tandai Izin Sakit"
-                                        class="px-2.5 py-1 rounded-md text-xs font-bold bg-sky-50 hover:bg-sky-600 text-sky-700 hover:text-white border border-sky-300 shadow-2xs transition flex items-center gap-1">
-                                        <i class="fa-solid fa-stethoscope"></i> Sakit
+                                        class="px-2 py-1 text-2xs font-bold text-slate-700 hover:text-sky-700 hover:bg-white rounded transition-all flex items-center gap-1 cursor-pointer">
+                                        <i class="fa-solid fa-stethoscope text-sky-500 text-[10px]"></i> Sakit
                                     </button>
 
                                     <!-- Tombol Absen -->
                                     <button type="button" 
                                         onclick='openPilihSesiModal(<?= json_encode($s); ?>, "Absen")'
                                         title="Tandai Alpa / Tidak Hadir"
-                                        class="px-2.5 py-1 rounded-md text-xs font-bold bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 shadow-2xs transition flex items-center gap-1">
-                                        <i class="fa-solid fa-xmark"></i> Absen
+                                        class="px-2 py-1 text-2xs font-bold text-slate-700 hover:text-rose-700 hover:bg-white rounded transition-all flex items-center gap-1 cursor-pointer">
+                                        <i class="fa-solid fa-xmark text-rose-500 text-[10px]"></i> Absen
                                     </button>
                                 </div>
                             </td>
 
-                            <!-- Rekapitulasi 1 Bulan / Status Presensi Tanggal Spesifik -->
+                            <!-- Rekapitulasi 1 Bulan: Strip Metrik Presensi Eksekutif -->
                             <td class="py-3 px-2 border-r border-slate-200 text-center td-status-col" data-santri-id="<?= $s['id']; ?>">
                                 <!-- View 1: Akumulasi 1 Bulan (<?= count($sesi_kehadiran); ?> Sesi) -->
-                                <div class="view-rekap-akumulasi grid grid-cols-4 gap-1 text-2xs font-bold" id="view-rekap-<?= $s['id']; ?>">
-                                    <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200" title="Hadir: <?= $rekap['count_hadir']; ?> Sesi">
-                                        <?= $rekap['count_hadir']; ?> H
+                                <div class="view-rekap-akumulasi inline-flex items-center divide-x divide-slate-200/90 rounded border border-slate-200/90 bg-white shadow-2xs text-[11px] font-mono tracking-tight overflow-hidden" id="view-rekap-<?= $s['id']; ?>">
+                                    <span class="px-2 py-0.5 font-bold <?= $rekap['count_hadir'] > 0 ? 'text-emerald-700 bg-emerald-50/50' : 'text-slate-400'; ?>" title="Hadir: <?= $rekap['count_hadir']; ?> Sesi">
+                                        <span class="text-slate-400 font-normal mr-0.5 text-[9.5px]">H:</span><?= $rekap['count_hadir']; ?>
                                     </span>
-                                    <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200" title="Telat: <?= $rekap['count_telat']; ?> Sesi">
-                                        <?= $rekap['count_telat']; ?> T
+                                    <span class="px-2 py-0.5 font-semibold <?= $rekap['count_telat'] > 0 ? 'text-amber-800 bg-amber-50/50' : 'text-slate-400'; ?>" title="Telat: <?= $rekap['count_telat']; ?> Sesi">
+                                        <span class="text-slate-400 font-normal mr-0.5 text-[9.5px]">T:</span><?= $rekap['count_telat']; ?>
                                     </span>
-                                    <span class="px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200" title="Sakit: <?= $rekap['count_sakit']; ?> Sesi">
-                                        <?= $rekap['count_sakit']; ?> S
+                                    <span class="px-2 py-0.5 font-semibold <?= $rekap['count_sakit'] > 0 ? 'text-sky-800 bg-sky-50/50' : 'text-slate-400'; ?>" title="Sakit: <?= $rekap['count_sakit']; ?> Sesi">
+                                        <span class="text-slate-400 font-normal mr-0.5 text-[9.5px]">S:</span><?= $rekap['count_sakit']; ?>
                                     </span>
-                                    <span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200" title="Absen: <?= $rekap['count_absen']; ?> Sesi">
-                                        <?= $rekap['count_absen']; ?> A
+                                    <span class="px-2 py-0.5 font-bold <?= $rekap['count_absen'] > 0 ? 'text-rose-700 bg-rose-50/70' : 'text-slate-400'; ?>" title="Absen: <?= $rekap['count_absen']; ?> Sesi">
+                                        <span class="text-slate-400 font-normal mr-0.5 text-[9.5px]">A:</span><?= $rekap['count_absen']; ?>
                                     </span>
                                 </div>
                                 <!-- View 2: Status Spesifik Tanggal (Dinamis via JS) -->
@@ -481,8 +546,8 @@ foreach ($sesi_kehadiran as $s) {
                             </td>
 
                             <!-- Persentase Kehadiran 1 Bulan -->
-                            <td class="py-3 px-3 border-r border-slate-200 text-center bg-emerald-50/20">
-                                <span class="font-black text-emerald-700 text-sm"><?= $pct; ?>%</span>
+                            <td class="py-3 px-3 border-r border-slate-200 text-center bg-slate-50/30">
+                                <span class="font-bold text-slate-800 text-xs font-mono"><?= $pct; ?>%</span>
                             </td>
 
                             <!-- Tombol Aksi Detail Riwayat -->
@@ -547,9 +612,10 @@ foreach ($sesi_kehadiran as $s) {
                     </div>
                 </div>
                 <div class="text-right">
-                    <span id="modal_santri_kehadiran_badge" class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
-                        Kehadiran: 95%
-                    </span>
+                    <div class="inline-flex items-center divide-x divide-slate-200 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-2xs">
+                        <span class="px-2.5 py-1 text-slate-500">Kehadiran</span>
+                        <span id="modal_santri_kehadiran_badge" class="px-2.5 py-1 font-bold text-emerald-600">95%</span>
+                    </div>
                 </div>
             </div>
 
@@ -679,7 +745,10 @@ foreach ($sesi_kehadiran as $s) {
             <div class="border border-slate-200 rounded-xl overflow-hidden">
                 <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Daftar Sesi Presensi (<?= count($sesi_kehadiran); ?> Sesi)</span>
-                    <span class="text-2xs font-semibold text-slate-500" id="hist_pct_span">Persentase: 95%</span>
+                    <div class="inline-flex items-center divide-x divide-slate-200 rounded-lg border border-slate-200 bg-white text-2xs font-medium text-slate-700 shadow-2xs">
+                        <span class="px-2 py-0.5 text-slate-500">Kehadiran</span>
+                        <span id="hist_pct_span" class="px-2 py-0.5 font-bold text-emerald-600">95%</span>
+                    </div>
                 </div>
                 <div class="divide-y divide-slate-100 max-h-72 overflow-y-auto" id="hist_log_list">
                     <!-- Populated dynamically via JS -->
@@ -756,6 +825,228 @@ foreach ($sesi_kehadiran as $s) {
         </form>
     </div>
 </div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: Detail Sesi Pertemuan (Informasi Lengkap & Log Kehadiran) -->
+<!-- ========================================================================= -->
+<div id="modalDetailSesi" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in duration-200">
+        <!-- Header -->
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-brand-light text-brand flex items-center justify-center text-lg font-bold shrink-0">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </span>
+                <div>
+                    <h3 class="text-base font-bold text-slate-800" id="detail_sesi_judul">Detail Sesi Pertemuan</h3>
+                    <p class="text-xs text-slate-500" id="detail_sesi_sub">Informasi lengkap kegiatan dan rekapan presensi</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeDetailSesiModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-4 overflow-y-auto flex-1">
+            <!-- Info Box Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-500 flex items-center justify-center shrink-0">
+                        <i class="fa-regular fa-calendar text-brand"></i>
+                    </div>
+                    <div>
+                        <span class="text-3xs text-slate-400 block font-medium uppercase">Tanggal Pelaksanaan</span>
+                        <span class="font-bold text-slate-800" id="detail_sesi_tanggal">-</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-500 flex items-center justify-center shrink-0">
+                        <i class="fa-regular fa-clock text-brand"></i>
+                    </div>
+                    <div>
+                        <span class="text-3xs text-slate-400 block font-medium uppercase">Waktu Sesi</span>
+                        <span class="font-bold text-slate-800 font-mono" id="detail_sesi_waktu">-</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-500 flex items-center justify-center shrink-0">
+                        <i class="fa-regular fa-user text-brand"></i>
+                    </div>
+                    <div>
+                        <span class="text-3xs text-slate-400 block font-medium uppercase">Pengajar / Instruktur</span>
+                        <span class="font-bold text-slate-800" id="detail_sesi_pengajar">-</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-500 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-location-dot text-brand"></i>
+                    </div>
+                    <div>
+                        <span class="text-3xs text-slate-400 block font-medium uppercase">Ruangan / Tempat</span>
+                        <span class="font-bold text-slate-800" id="detail_sesi_lokasi">-</span>
+                    </div>
+                </div>
+                <div class="col-span-full pt-2 border-t border-slate-200/70">
+                    <span class="text-3xs text-slate-400 block font-medium uppercase">Materi Pembelajaran</span>
+                    <p class="font-semibold text-slate-700 mt-0.5" id="detail_sesi_materi">-</p>
+                </div>
+            </div>
+
+            <!-- 4 Stat Badges -->
+            <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                    <span class="text-3xs text-emerald-700 block font-semibold uppercase">Hadir</span>
+                    <span class="text-xl font-black text-emerald-800" id="detail_sesi_hadir">0</span>
+                </div>
+                <div class="p-3 rounded-xl bg-amber-50 border border-amber-200">
+                    <span class="text-3xs text-amber-700 block font-semibold uppercase">Telat</span>
+                    <span class="text-xl font-black text-amber-800" id="detail_sesi_telat">0</span>
+                </div>
+                <div class="p-3 rounded-xl bg-sky-50 border border-sky-200">
+                    <span class="text-3xs text-sky-700 block font-semibold uppercase">Sakit</span>
+                    <span class="text-xl font-black text-sky-800" id="detail_sesi_sakit">0</span>
+                </div>
+                <div class="p-3 rounded-xl bg-rose-50 border border-rose-200">
+                    <span class="text-3xs text-rose-700 block font-semibold uppercase">Absen</span>
+                    <span class="text-xl font-black text-rose-800" id="detail_sesi_alpa">0</span>
+                </div>
+            </div>
+
+            <!-- Tingkat Kehadiran Bar -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-semibold text-slate-700">Tingkat Kedisiplinan & Presensi</span>
+                    <span class="font-bold text-emerald-600" id="detail_sesi_persen">0% Hadir</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <div id="detail_sesi_bar" class="h-full rounded-full bg-emerald-500 transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Log Santri Terkait Sesi Ini -->
+            <div class="border border-slate-200 rounded-xl overflow-hidden">
+                <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Santri Terdata Pada Sesi Ini</span>
+                    <span class="text-2xs font-semibold text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs" id="detail_sesi_santri_count">0 Santri</span>
+                </div>
+                <div class="divide-y divide-slate-100 max-h-60 overflow-y-auto" id="detail_sesi_santri_list">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+            <button type="button" id="btnEditFromDetail" class="px-4 py-2 rounded-lg bg-brand hover:bg-brand-dark text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                <i class="fa-solid fa-pen text-xs"></i> Edit Sesi Ini
+            </button>
+            <button type="button" onclick="closeDetailSesiModal()" class="px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold transition cursor-pointer">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: Edit Sesi Pertemuan -->
+<!-- ========================================================================= -->
+<div id="modalEditSesi" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in duration-200">
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <span class="w-8 h-8 rounded-lg bg-brand-light text-brand flex items-center justify-center text-sm font-bold">
+                    <i class="fa-solid fa-pen"></i>
+                </span>
+                <h3 class="text-base font-bold text-slate-800">Edit Sesi Pertemuan</h3>
+            </div>
+            <button type="button" onclick="closeEditSesiModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <form action="<?= base_url('admin/kehadiran/update_sesi'); ?>" method="post" class="p-6 space-y-4">
+            <?= csrf_field(); ?>
+            <input type="hidden" name="id" id="edit_sesi_id">
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Sesi / Judul</label>
+                <input type="text" name="nama_sesi" id="edit_sesi_nama" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal</label>
+                    <input type="date" name="tanggal" id="edit_sesi_tanggal" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Waktu</label>
+                    <input type="text" name="waktu" id="edit_sesi_waktu" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Lokasi Pertemuan</label>
+                <input type="text" name="lokasi" id="edit_sesi_lokasi" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand">
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+                <div>
+                    <label class="block text-2xs font-semibold text-emerald-700 mb-1">Hadir</label>
+                    <input type="number" name="total_hadir" id="edit_sesi_hadir" min="0" max="100" class="w-full px-2 py-1.5 text-xs text-center font-bold rounded-lg border border-slate-300">
+                </div>
+                <div>
+                    <label class="block text-2xs font-semibold text-amber-700 mb-1">Telat</label>
+                    <input type="number" name="total_telat" id="edit_sesi_telat" min="0" max="100" class="w-full px-2 py-1.5 text-xs text-center font-bold rounded-lg border border-slate-300">
+                </div>
+                <div>
+                    <label class="block text-2xs font-semibold text-sky-700 mb-1">Sakit</label>
+                    <input type="number" name="total_sakit" id="edit_sesi_sakit" min="0" max="100" class="w-full px-2 py-1.5 text-xs text-center font-bold rounded-lg border border-slate-300">
+                </div>
+                <div>
+                    <label class="block text-2xs font-semibold text-rose-700 mb-1">Absen</label>
+                    <input type="number" name="total_alpa" id="edit_sesi_alpa" min="0" max="100" class="w-full px-2 py-1.5 text-xs text-center font-bold rounded-lg border border-slate-300">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan / Materi Pembelajaran</label>
+                <input type="text" name="keterangan" id="edit_sesi_keterangan" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand">
+            </div>
+            <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+                <button type="button" onclick="confirmDeleteSesi()" class="px-3 py-2 text-xs font-semibold text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition cursor-pointer">
+                    <i class="fa-regular fa-trash-can mr-1"></i> Hapus Sesi
+                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="closeEditSesiModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">Batal</button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand-dark shadow-xs cursor-pointer">Simpan Perubahan</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: Konfirmasi Hapus Sesi -->
+<!-- ========================================================================= -->
+<div id="modalDeleteSesi" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6 text-center animate-in fade-in duration-200">
+        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 text-xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">Hapus Sesi Pertemuan?</h3>
+        <p class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">
+            Apakah Anda yakin ingin menghapus sesi <strong class="text-slate-800" id="del_sesi_nama">Sesi</strong>? Tindakan ini akan menghapus log presensi terkait pada sesi ini.
+        </p>
+        <form action="<?= base_url('admin/kehadiran/delete_sesi'); ?>" method="post">
+            <?= csrf_field(); ?>
+            <input type="hidden" name="id" id="del_sesi_id">
+            <div class="flex items-center justify-center gap-2">
+                <button type="button" onclick="closeDeleteSesiModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
+                    Batal
+                </button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs cursor-pointer">
+                    Ya, Hapus Sesi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <script>
 // Data Logs Lengkap dari PHP
@@ -886,8 +1177,8 @@ function setTableDateFilter(dateVal) {
 
                     html += `
                         <div class="flex items-center gap-1.5" title="${l.nama_sesi || 'Sesi'}: ${l.keterangan || l.status}">
-                            <span class="px-2 py-0.5 rounded-full text-2xs font-extrabold border ${badgeCls} inline-flex items-center gap-1 shadow-2xs">
-                                <i class="fa-solid ${iconCls}"></i> ${l.status}
+                            <span class="px-2 py-0.5 rounded text-2xs font-semibold border ${badgeCls} inline-flex items-center gap-1 shadow-2xs">
+                                <i class="fa-solid ${iconCls} text-[10px]"></i> ${l.status}
                             </span>
                             <span class="text-3xs text-slate-400 font-medium truncate max-w-[110px]">
                                 ${l.waktu ? l.waktu.split('-')[0].trim() : ''}
@@ -902,7 +1193,37 @@ function setTableDateFilter(dateVal) {
     }
 }
 
-// Filter Sesi Cards Berdasarkan Filter Cepat / Tanggal Spesifik
+// State & Data Sesi Pertemuan (Client-Side Reactive Controller)
+const allSesiData = <?= json_encode($sesiPreparedList ?? []); ?>;
+let currentSesiView   = 'cards';
+let currentSesiFilter = 'all';
+let currentSesiSearch = '';
+let currentSesiPage   = 1;
+const SESI_PER_PAGE   = 6;
+
+// Ganti Mode Tampilan Sesi: Kartu vs Tabel
+function switchSesiView(viewMode) {
+    currentSesiView = viewMode;
+    const cardsEl = document.getElementById('sesiCardsGrid');
+    const tableEl = document.getElementById('sesiTableView');
+    const btnCards = document.getElementById('btnViewCards');
+    const btnTable = document.getElementById('btnViewTable');
+
+    if (viewMode === 'cards') {
+        if (cardsEl) cardsEl.classList.remove('hidden');
+        if (tableEl) tableEl.classList.add('hidden');
+        if (btnCards) btnCards.className = 'px-2.5 py-1 rounded-md bg-white text-brand shadow-2xs font-semibold flex items-center gap-1.5 cursor-pointer';
+        if (btnTable) btnTable.className = 'px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-800 font-medium flex items-center gap-1.5 cursor-pointer';
+    } else {
+        if (cardsEl) cardsEl.classList.add('hidden');
+        if (tableEl) tableEl.classList.remove('hidden');
+        if (btnTable) btnTable.className = 'px-2.5 py-1 rounded-md bg-white text-brand shadow-2xs font-semibold flex items-center gap-1.5 cursor-pointer';
+        if (btnCards) btnCards.className = 'px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-800 font-medium flex items-center gap-1.5 cursor-pointer';
+    }
+    applySesiFilterAndRender();
+}
+
+// Filter Sesi Berdasarkan Tombol Cepat
 function filterSesiByFilter(filterVal, event) {
     document.querySelectorAll('.btn-filter-sesi').forEach(btn => {
         btn.classList.remove('bg-brand', 'text-white', 'shadow-xs', 'font-semibold');
@@ -928,57 +1249,440 @@ function filterSesiByFilter(filterVal, event) {
         }
     }
 
-    const cards = document.querySelectorAll('.card-sesi');
-    let visibleCount = 0;
-
-    cards.forEach(c => {
-        const d = c.getAttribute('data-date'); // YYYY-MM-DD
-        let match = false;
-        if (filterVal === 'all') {
-            match = true;
-        } else if (filterVal === 'today') {
-            match = (d === REALTIME_TODAY);
-        } else if (filterVal === 'yesterday') {
-            match = (d === REALTIME_YESTERDAY);
-        } else if (filterVal.startsWith('month:')) {
-            const mKey = filterVal.substring(6);
-            match = d.startsWith(mKey);
-        } else if (filterVal.startsWith('range:')) {
-            const parts = filterVal.substring(6).split(':');
-            match = (d >= parts[0] && d <= parts[1]);
-        } else {
-            // Tanggal spesifik YYYY-MM-DD
-            match = (d === filterVal);
-        }
-
-        if (match) {
-            c.style.display = '';
-            visibleCount++;
-        } else {
-            c.style.display = 'none';
-        }
-    });
-
-    const badge = document.getElementById('sesiCountBadge');
-    if (badge) badge.textContent = `${visibleCount} Sesi`;
-
-    const emptyState = document.getElementById('sesiEmptyState');
-    if (emptyState) {
-        if (visibleCount === 0) {
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-        }
-    }
+    currentSesiFilter = filterVal;
+    currentSesiPage = 1;
+    applySesiFilterAndRender();
 }
 
+// Filter Sesi Berdasarkan Custom Datepicker
 function filterSesiByCustomDate(val) {
     if (!val) return;
-    filterSesiByFilter(val);
     document.querySelectorAll('.btn-filter-sesi').forEach(btn => {
         btn.classList.remove('bg-brand', 'text-white', 'shadow-xs', 'font-semibold');
         btn.classList.add('bg-slate-100', 'text-slate-700');
     });
+    currentSesiFilter = val;
+    currentSesiPage = 1;
+    applySesiFilterAndRender();
+}
+
+// Filter Sesi Berdasarkan Realtime Search Input
+function onSearchSesiChange(keyword) {
+    currentSesiSearch = keyword.toLowerCase().trim();
+    currentSesiPage = 1;
+    applySesiFilterAndRender();
+}
+
+// Ambil List Sesi yang Memenuhi Kriteria Filter & Pencarian
+function getFilteredSesi() {
+    return allSesiData.filter(item => {
+        // 1. Filter Tanggal
+        let dateMatch = false;
+        const d = item.tanggal;
+        if (currentSesiFilter === 'all') {
+            dateMatch = true;
+        } else if (currentSesiFilter === 'today') {
+            dateMatch = (d === REALTIME_TODAY);
+        } else if (currentSesiFilter === 'yesterday') {
+            dateMatch = (d === REALTIME_YESTERDAY);
+        } else if (currentSesiFilter.startsWith('month:')) {
+            const mKey = currentSesiFilter.substring(6);
+            dateMatch = d.startsWith(mKey);
+        } else if (currentSesiFilter.startsWith('range:')) {
+            const parts = currentSesiFilter.substring(6).split(':');
+            dateMatch = (d >= parts[0] && d <= parts[1]);
+        } else {
+            dateMatch = (d === currentSesiFilter);
+        }
+
+        if (!dateMatch) return false;
+
+        // 2. Filter Pencarian
+        if (currentSesiSearch) {
+            const q = currentSesiSearch;
+            const inJudul = (item.judul || '').toLowerCase().includes(q);
+            const inMateri = (item.materi || '').toLowerCase().includes(q);
+            const inPengajar = (item.pengajar || '').toLowerCase().includes(q);
+            const inLokasi = (item.lokasi || '').toLowerCase().includes(q);
+            const inNama = (item.nama_sesi || '').toLowerCase().includes(q);
+            if (!inJudul && !inMateri && !inPengajar && !inLokasi && !inNama) {
+                return false;
+            }
+        }
+
+        return true;
+    });
+}
+
+// Render Card HTML (Sesuai Persis dengan Image Mockup)
+function renderCardHtml(s) {
+    const isEmerald = s.persentase >= 90;
+    const isAmber = s.persentase >= 75 && s.persentase < 90;
+    const pctColor = isEmerald ? 'text-emerald-600' : (isAmber ? 'text-amber-600' : 'text-rose-600');
+    const barBg = isEmerald ? 'bg-emerald-500' : (isAmber ? 'bg-amber-500' : 'bg-rose-500');
+
+    // Safe JSON encoded data
+    const sJson = JSON.stringify(s).replace(/'/g, "&#39;");
+
+    return `
+    <div class="card-sesi bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 hover:shadow-xs transition flex flex-col justify-between">
+        <div>
+            <!-- Card Header: Tanggal & Waktu -->
+            <div class="flex items-center justify-between text-xs text-slate-600 mb-2.5">
+                <div class="flex items-center gap-1.5 font-medium text-slate-700">
+                    <i class="fa-regular fa-calendar text-slate-400"></i>
+                    <span>${s.tanggal_format}</span>
+                </div>
+                <div class="flex items-center gap-1.5 font-mono text-slate-500 text-2xs font-semibold">
+                    <i class="fa-regular fa-clock text-slate-400"></i>
+                    <span>${s.waktu}</span>
+                </div>
+            </div>
+
+            <!-- Card Body: Judul, Materi, Pengajar, Lokasi & Persentase -->
+            <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="space-y-1 min-w-0 flex-1">
+                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-1.5 truncate">
+                        <i class="fa-solid fa-circle-info text-slate-400 text-xs shrink-0"></i>
+                        <span class="truncate" title="${s.judul}">${s.judul}</span>
+                    </h4>
+                    <p class="text-xs text-slate-500 truncate" title="${s.materi}">${s.materi}</p>
+                    <div class="flex items-center gap-1.5 text-xs text-slate-600 pt-0.5">
+                        <i class="fa-regular fa-user text-slate-400 w-3.5 text-center"></i>
+                        <span class="truncate font-medium">${s.pengajar}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                        <i class="fa-solid fa-location-dot text-slate-400 w-3.5 text-center"></i>
+                        <span class="truncate">${s.lokasi}</span>
+                    </div>
+                </div>
+                <div class="text-right shrink-0">
+                    <div class="text-sm font-bold ${pctColor}">
+                        ${Number(s.persentase).toFixed(1)}% Hadir
+                    </div>
+                    <div class="text-xs font-semibold text-slate-700 mt-0.5">
+                        ${s.total_hadir}/${s.total_peserta} Santri
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden my-2">
+                <div class="h-full rounded-full ${barBg} transition-all duration-300" style="width: ${Math.min(100, Math.max(0, s.persentase))}%"></div>
+            </div>
+
+            <!-- Breakdown Row -->
+            <div class="text-xs text-slate-600 font-medium mb-3 flex items-center justify-between">
+                <span>Hadir: <strong class="text-slate-800">${s.total_hadir}</strong></span>
+                <span class="text-slate-300">|</span>
+                <span>Telat: <strong class="text-slate-800">${s.total_telat}</strong></span>
+                <span class="text-slate-300">|</span>
+                <span>Sakit: <strong class="text-slate-800">${s.total_sakit}</strong></span>
+                <span class="text-slate-300">|</span>
+                <span>Absen: <strong class="text-slate-800">${s.total_alpa}</strong></span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+            <button type="button" onclick='openDetailSesiModal(${sJson})' class="flex-1 bg-brand hover:bg-brand-dark text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs hover:shadow-xs transition text-center cursor-pointer">
+                Lihat Detail Sesi
+            </button>
+            <button type="button" onclick='openEditSesiModal(${sJson})' class="w-8 h-8 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center transition shrink-0 cursor-pointer" title="Edit Sesi">
+                <i class="fa-solid fa-pen text-xs"></i>
+            </button>
+        </div>
+    </div>
+    `;
+}
+
+// Render Table Row HTML (Tampilan Tabel Minimalis)
+function renderSesiTableView(items, startIndex) {
+    const tbody = document.getElementById('sesiTableBody');
+    if (!tbody) return;
+
+    let html = '';
+    items.forEach((s, idx) => {
+        const isEmerald = s.persentase >= 90;
+        const isAmber = s.persentase >= 75 && s.persentase < 90;
+        const pctColor = isEmerald ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (isAmber ? 'text-amber-800 bg-amber-50 border-amber-200' : 'text-rose-700 bg-rose-50 border-rose-200');
+        const barBg = isEmerald ? 'bg-emerald-500' : (isAmber ? 'bg-amber-500' : 'bg-rose-500');
+        const sJson = JSON.stringify(s).replace(/'/g, "&#39;");
+
+        html += `
+        <tr class="hover:bg-slate-50/70 transition">
+            <td class="py-3 px-3.5 text-center font-bold text-slate-500 border-r border-slate-100">${startIndex + idx + 1}</td>
+            <td class="py-3 px-4 border-r border-slate-100">
+                <span class="font-bold text-slate-800 block">${s.tanggal_format}</span>
+                <span class="font-mono text-3xs text-slate-500 flex items-center gap-1 mt-0.5">
+                    <i class="fa-regular fa-clock text-slate-400"></i> ${s.waktu}
+                </span>
+            </td>
+            <td class="py-3 px-4 border-r border-slate-100">
+                <span class="font-bold text-slate-800 block">${s.judul}</span>
+                <span class="text-3xs text-slate-500 block truncate max-w-xs">${s.materi}</span>
+            </td>
+            <td class="py-3 px-4 border-r border-slate-100">
+                <span class="font-semibold text-slate-700 block truncate">${s.pengajar}</span>
+                <span class="text-3xs text-slate-500 flex items-center gap-1 mt-0.5">
+                    <i class="fa-solid fa-location-dot text-slate-400"></i> ${s.lokasi}
+                </span>
+            </td>
+            <td class="py-3 px-4 text-center border-r border-slate-100">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-2xs font-extrabold border ${pctColor} mb-1">
+                    ${Number(s.persentase).toFixed(1)}%
+                </span>
+                <div class="w-24 mx-auto bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full ${barBg}" style="width: ${Math.min(100, Math.max(0, s.persentase))}%"></div>
+                </div>
+                <span class="text-3xs text-slate-500 block mt-0.5">${s.total_hadir}/${s.total_peserta} Santri</span>
+            </td>
+            <td class="py-3 px-4 text-center border-r border-slate-100">
+                <div class="inline-flex items-center divide-x divide-slate-200 rounded border border-slate-200 bg-white text-3xs font-mono">
+                    <span class="px-1.5 py-0.5 text-emerald-700 font-bold" title="Hadir"><span class="text-slate-400 font-normal">H:</span>${s.total_hadir}</span>
+                    <span class="px-1.5 py-0.5 text-amber-700 font-semibold" title="Telat"><span class="text-slate-400 font-normal">T:</span>${s.total_telat}</span>
+                    <span class="px-1.5 py-0.5 text-sky-700 font-semibold" title="Sakit"><span class="text-slate-400 font-normal">S:</span>${s.total_sakit}</span>
+                    <span class="px-1.5 py-0.5 text-rose-700 font-bold" title="Absen"><span class="text-slate-400 font-normal">A:</span>${s.total_alpa}</span>
+                </div>
+            </td>
+            <td class="py-3 px-3 text-center">
+                <div class="inline-flex items-center gap-1.5">
+                    <button type="button" onclick='openDetailSesiModal(${sJson})' class="w-7 h-7 rounded-lg bg-brand-light text-brand hover:bg-brand hover:text-white transition flex items-center justify-center cursor-pointer shadow-2xs" title="Lihat Detail">
+                        <i class="fa-regular fa-eye text-xs"></i>
+                    </button>
+                    <button type="button" onclick='openEditSesiModal(${sJson})' class="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition flex items-center justify-center cursor-pointer" title="Edit Sesi">
+                        <i class="fa-solid fa-pen text-xs"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+// Controller Render Utama & Paginasi
+function applySesiFilterAndRender() {
+    const filtered = getFilteredSesi();
+    const totalItems = filtered.length;
+    const totalPages = Math.ceil(totalItems / SESI_PER_PAGE) || 1;
+    if (currentSesiPage > totalPages) currentSesiPage = totalPages;
+    if (currentSesiPage < 1) currentSesiPage = 1;
+
+    const startIndex = (currentSesiPage - 1) * SESI_PER_PAGE;
+    const endIndex = Math.min(startIndex + SESI_PER_PAGE, totalItems);
+    const pageItems = filtered.slice(startIndex, endIndex);
+
+    const countBadge = document.getElementById('sesiCountBadge');
+    if (countBadge) countBadge.textContent = `${totalItems} Sesi`;
+
+    const emptyState = document.getElementById('sesiEmptyState');
+    const cardsGrid  = document.getElementById('sesiCardsGrid');
+
+    if (totalItems === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        if (cardsGrid) cardsGrid.innerHTML = '';
+        const tbody = document.getElementById('sesiTableBody');
+        if (tbody) tbody.innerHTML = '';
+    } else {
+        if (emptyState) emptyState.classList.add('hidden');
+        if (currentSesiView === 'cards') {
+            if (cardsGrid) {
+                cardsGrid.innerHTML = pageItems.map(renderCardHtml).join('');
+            }
+        } else {
+            renderSesiTableView(pageItems, startIndex);
+        }
+    }
+
+    renderSesiPagination(totalItems);
+}
+
+// Render Tombol Pagination (Sebelumnya, 1, 2, 3..., Berikutnya)
+function renderSesiPagination(filteredTotal) {
+    const totalPages = Math.ceil(filteredTotal / SESI_PER_PAGE) || 1;
+    const container = document.getElementById('sesiPaginationButtons');
+    const info = document.getElementById('sesiPaginationInfo');
+
+    const startIndex = (currentSesiPage - 1) * SESI_PER_PAGE;
+    const endIndex = Math.min(startIndex + SESI_PER_PAGE, filteredTotal);
+
+    if (info) {
+        if (filteredTotal === 0) {
+            info.textContent = 'Menampilkan 0 sesi';
+        } else {
+            info.textContent = `Menampilkan ${startIndex + 1} sampai ${endIndex} dari ${filteredTotal} sesi`;
+        }
+    }
+
+    if (!container) return;
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+    // Tombol Sebelumnya
+    const prevDisabled = currentSesiPage === 1 ? 'disabled opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-50';
+    html += `<button type="button" onclick="goToSesiPage(${currentSesiPage - 1})" ${currentSesiPage === 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 ${prevDisabled} transition">Sebelumnya</button>`;
+
+    // Tombol Angka Halaman
+    for (let p = 1; p <= totalPages; p++) {
+        if (totalPages > 7) {
+            if (p !== 1 && p !== totalPages && Math.abs(p - currentSesiPage) > 1) {
+                if (p === 2 || p === totalPages - 1) {
+                    html += `<span class="px-1 text-slate-400">...</span>`;
+                }
+                continue;
+            }
+        }
+        if (p === currentSesiPage) {
+            html += `<button type="button" class="w-8 h-8 rounded-lg bg-brand text-white font-bold shadow-2xs">${p}</button>`;
+        } else {
+            html += `<button type="button" onclick="goToSesiPage(${p})" class="w-8 h-8 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 transition cursor-pointer">${p}</button>`;
+        }
+    }
+
+    // Tombol Berikutnya
+    const nextDisabled = currentSesiPage === totalPages ? 'disabled opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-50';
+    html += `<button type="button" onclick="goToSesiPage(${currentSesiPage + 1})" ${currentSesiPage === totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 ${nextDisabled} transition">Berikutnya</button>`;
+
+    container.innerHTML = html;
+}
+
+function goToSesiPage(page) {
+    const filtered = getFilteredSesi();
+    const totalPages = Math.ceil(filtered.length / SESI_PER_PAGE) || 1;
+    if (page < 1 || page > totalPages) return;
+    currentSesiPage = page;
+    applySesiFilterAndRender();
+}
+
+// Modal Detail Sesi Pertemuan
+function openDetailSesiModal(s) {
+    document.getElementById('detail_sesi_judul').textContent = s.judul || s.nama_sesi;
+    document.getElementById('detail_sesi_sub').textContent = 'Sesi: ' + (s.nama_sesi || '-') + ' • ' + s.tanggal_format;
+    document.getElementById('detail_sesi_tanggal').textContent = s.tanggal_format;
+    document.getElementById('detail_sesi_waktu').textContent = s.waktu_raw || s.waktu;
+    document.getElementById('detail_sesi_pengajar').textContent = s.pengajar || '-';
+    document.getElementById('detail_sesi_lokasi').textContent = s.lokasi || '-';
+    document.getElementById('detail_sesi_materi').textContent = s.materi || '-';
+
+    document.getElementById('detail_sesi_hadir').textContent = s.total_hadir;
+    document.getElementById('detail_sesi_telat').textContent = s.total_telat;
+    document.getElementById('detail_sesi_sakit').textContent = s.total_sakit;
+    document.getElementById('detail_sesi_alpa').textContent = s.total_alpa;
+
+    const pct = Number(s.persentase).toFixed(1);
+    const pctSpan = document.getElementById('detail_sesi_persen');
+    pctSpan.textContent = pct + '% Hadir';
+    pctSpan.className = s.persentase >= 90 ? 'font-bold text-emerald-600' : (s.persentase >= 75 ? 'font-bold text-amber-600' : 'font-bold text-rose-600');
+
+    const barEl = document.getElementById('detail_sesi_bar');
+    barEl.style.width = Math.min(100, Math.max(0, s.persentase)) + '%';
+    barEl.className = 'h-full rounded-full transition-all duration-300 ' + (s.persentase >= 90 ? 'bg-emerald-500' : (s.persentase >= 75 ? 'bg-amber-500' : 'bg-rose-500'));
+
+    // Filter santri logs for this sesi
+    const listContainer = document.getElementById('detail_sesi_santri_list');
+    listContainer.innerHTML = '';
+
+    const matchingLogs = allLogsData.filter(l => (Number(l.sesi_id) === Number(s.id)) || (l.tanggal === s.tanggal && l.nama_sesi === s.nama_sesi));
+    document.getElementById('detail_sesi_santri_count').textContent = matchingLogs.length + ' Log Santri';
+
+    if (matchingLogs.length === 0) {
+        listContainer.innerHTML = `
+            <div class="p-6 text-center text-xs text-slate-400">
+                <i class="fa-solid fa-clipboard-user text-slate-300 text-2xl mb-1 block"></i>
+                Belum ada log presensi santri individual yang dicatat khusus untuk sesi ini.<br>
+                Gunakan toolbar presensi santri di tabel bawah untuk mencatat kehadiran per santri.
+            </div>
+        `;
+    } else {
+        matchingLogs.forEach(l => {
+            let badgeBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            let iconFa = 'fa-check text-emerald-600';
+            if (l.status === 'Telat') {
+                badgeBg = 'bg-amber-50 text-amber-700 border-amber-200';
+                iconFa = 'fa-clock text-amber-600';
+            } else if (l.status === 'Sakit') {
+                badgeBg = 'bg-sky-50 text-sky-700 border-sky-200';
+                iconFa = 'fa-stethoscope text-sky-600';
+            } else if (l.status === 'Absen') {
+                badgeBg = 'bg-rose-50 text-rose-700 border-rose-200';
+                iconFa = 'fa-xmark text-rose-600';
+            }
+
+            const item = document.createElement('div');
+            item.className = 'p-3 flex items-center justify-between gap-3 hover:bg-slate-50 transition';
+            item.innerHTML = `
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <span class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs shrink-0">
+                        <i class="fa-solid ${iconFa}"></i>
+                    </span>
+                    <div class="truncate">
+                        <h5 class="text-xs font-bold text-slate-800 truncate">${l.santri_nama || l.nama || ('Santri #' + l.santri_id)}</h5>
+                        <p class="text-3xs text-slate-400">${l.santri_kelas || l.kelas || ''} ${l.keterangan ? '• ' + l.keterangan : ''}</p>
+                    </div>
+                </div>
+                <span class="px-2.5 py-0.5 rounded text-2xs font-bold border ${badgeBg} shrink-0">
+                    ${l.status}
+                </span>
+            `;
+            listContainer.appendChild(item);
+        });
+    }
+
+    // Sambungkan tombol Edit dari dalam Modal Detail
+    const btnEdit = document.getElementById('btnEditFromDetail');
+    if (btnEdit) {
+        btnEdit.onclick = function() {
+            closeDetailSesiModal();
+            openEditSesiModal(s);
+        };
+    }
+
+    document.getElementById('modalDetailSesi').classList.remove('hidden');
+}
+
+function closeDetailSesiModal() {
+    document.getElementById('modalDetailSesi').classList.add('hidden');
+}
+
+// Modal Edit Sesi Pertemuan
+let currentEditSesiObj = null;
+
+function openEditSesiModal(s) {
+    currentEditSesiObj = s;
+    document.getElementById('edit_sesi_id').value = s.id;
+    document.getElementById('edit_sesi_nama').value = s.nama_sesi;
+    document.getElementById('edit_sesi_tanggal').value = s.tanggal;
+    document.getElementById('edit_sesi_waktu').value = s.waktu_raw || s.waktu;
+    document.getElementById('edit_sesi_lokasi').value = s.lokasi;
+    document.getElementById('edit_sesi_keterangan').value = s.keterangan || '';
+    document.getElementById('edit_sesi_hadir').value = s.total_hadir;
+    document.getElementById('edit_sesi_telat').value = s.total_telat;
+    document.getElementById('edit_sesi_sakit').value = s.total_sakit;
+    document.getElementById('edit_sesi_alpa').value = s.total_alpa;
+
+    document.getElementById('modalEditSesi').classList.remove('hidden');
+}
+
+function closeEditSesiModal() {
+    document.getElementById('modalEditSesi').classList.add('hidden');
+}
+
+// Konfirmasi Hapus Sesi
+function confirmDeleteSesi() {
+    if (!currentEditSesiObj) return;
+    document.getElementById('del_sesi_id').value = currentEditSesiObj.id;
+    document.getElementById('del_sesi_nama').textContent = currentEditSesiObj.nama_sesi;
+
+    closeEditSesiModal();
+    document.getElementById('modalDeleteSesi').classList.remove('hidden');
+}
+
+function closeDeleteSesiModal() {
+    document.getElementById('modalDeleteSesi').classList.add('hidden');
 }
 
 // Sinkronisasi Sesi & Tanggal pada Modal
@@ -1008,7 +1712,7 @@ function openPilihSesiModal(santri, statusTerpilih) {
     document.getElementById('modal_santri_nama').textContent = santri.nama;
     document.getElementById('modal_santri_kelas').textContent = santri.kelas;
     document.getElementById('modal_santri_id_badge').textContent = 'ID: ' + santri.id;
-    document.getElementById('modal_santri_kehadiran_badge').textContent = 'Kehadiran: ' + (santri.kehadiran || 95) + '%';
+    document.getElementById('modal_santri_kehadiran_badge').textContent = (santri.kehadiran || 95) + '%';
 
     // Jika sedang dalam filter tanggal tertentu di tabel, sesuaikan modal ke tanggal tersebut
     if (activeTableDate && activeTableDate !== 'all') {
@@ -1086,7 +1790,7 @@ function openRiwayatSantriModal(santri) {
     document.getElementById('hist_cnt_telat').textContent = rekap.count_telat || 0;
     document.getElementById('hist_cnt_sakit').textContent = rekap.count_sakit || 0;
     document.getElementById('hist_cnt_absen').textContent = rekap.count_absen || 0;
-    document.getElementById('hist_pct_span').textContent = 'Persentase Kehadiran: ' + (santri.kehadiran || 95) + '%';
+    document.getElementById('hist_pct_span').textContent = (santri.kehadiran || 95) + '%';
 
     const listContainer = document.getElementById('hist_log_list');
     listContainer.innerHTML = '';
@@ -1157,6 +1861,13 @@ function filterKehadiranTable() {
             r.style.display = 'none';
         }
     });
+}
+
+// Inisialisasi awal render sesi pertemuan pada saat halaman dimuat
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applySesiFilterAndRender);
+} else {
+    applySesiFilterAndRender();
 }
 </script>
 </body>

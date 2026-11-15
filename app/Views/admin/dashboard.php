@@ -73,12 +73,22 @@ $ambangKehadiran = 75;
 
             <!-- Info sistem untuk layar < xl (di xl tampil di header) -->
             <div class="flex flex-wrap items-center gap-2 xl:hidden">
-                <span class="inline-flex items-center gap-1.5 rounded-full border border-[#0066CC]/20 bg-[#0066CC]/10 px-3 py-1 text-xs font-semibold text-[#0052A3]">
-                    <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> Syiar Gemilang • Portal Akademik
-                </span>
-                <span class="inline-flex items-center gap-1.5 rounded-full border border-[#E2E8F0] bg-white px-3 py-1 text-xs font-semibold text-[#475569]">
-                    <i class="fa-solid fa-calendar-days text-[#0066CC]" aria-hidden="true"></i> Tahun Ajaran: 2026/2027 (Ganjil)
-                </span>
+                <div class="inline-flex items-stretch border border-slate-200/90 bg-white shadow-2xs overflow-hidden text-xs">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#04243F] text-[#FFD23F] font-mono font-bold text-[10.5px] tracking-wider uppercase">
+                        <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> SG-SYS
+                    </span>
+                    <span class="inline-flex items-center px-2.5 py-1 font-semibold text-slate-700 text-[11px] border-l border-slate-200 bg-slate-50/70">
+                        Syiar Gemilang • Portal Akademik
+                    </span>
+                </div>
+                <div class="inline-flex items-stretch border border-slate-200/90 bg-white shadow-2xs overflow-hidden text-xs">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 text-slate-600 font-mono text-[10.5px] font-semibold uppercase">
+                        <i class="fa-regular fa-calendar text-[#0066CC]" aria-hidden="true"></i> TA
+                    </span>
+                    <span class="inline-flex items-center px-2.5 py-1 font-bold text-slate-800 text-[11px] border-l border-slate-200">
+                        2026/2027 (Ganjil)
+                    </span>
+                </div>
             </div>
 
             <!-- ============ SUMMARY STATS ============ -->
@@ -106,9 +116,9 @@ $ambangKehadiran = 75;
                             <i class="fa-solid fa-book-open" aria-hidden="true"></i>
                         </span>
                     </div>
-                    <p class="sg-display mt-3 text-3xl font-extrabold tracking-tight tabular-nums text-[#1E293B]"><?= esc($total_mapel); ?> Aspek</p>
+                    <p class="sg-display mt-3 text-3xl font-extrabold tracking-tight tabular-nums text-[#1E293B]">6 Aspek</p>
                     <p class="mt-2 inline-flex items-center rounded-full bg-[#0EA5E9]/10 px-2.5 py-1 text-xs font-semibold text-[#0369A1]">
-                        4 Mapel + 1 Adab
+                        <?= esc($total_mapel); ?> Mata Diklat + 1 Adab
                     </p>
                 </article>
 
@@ -152,6 +162,37 @@ $ambangKehadiran = 75;
                         </p>
                     <?php endif; ?>
                 </article>
+            </section>
+
+            <!-- ============ CADANGAN DATABASE & PENCEGAHAN KEHILANGAN DATA ============ -->
+            <section class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-md border border-slate-700/60 relative overflow-hidden" aria-label="Cadangan Database">
+                <div class="absolute -right-8 -bottom-8 w-44 h-44 rounded-full bg-blue-500/10 pointer-events-none blur-2xl"></div>
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-white/10 text-[#FFD23F] border border-white/20 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+                            <i class="fa-solid fa-database"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-300 text-3xs font-extrabold uppercase tracking-wider border border-white/15">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Pencegahan Kehilangan Data Sistem
+                            </div>
+                            <h3 class="text-base sm:text-lg font-bold text-white tracking-tight">
+                                Cadangan Salinan Berkas Basis Data (.sql)
+                            </h3>
+                            <p class="text-xs text-slate-300 leading-relaxed max-w-2xl">
+                                Unduh salinan struktur dan seluruh data tabel database E-RGI Syiar Gemilang secara berkala dalam format <code class="bg-black/30 px-1.5 py-0.5 rounded text-amber-300 font-mono text-2xs">.sql</code> untuk memastikan keamanan data nilai santri, akun, presensi, dan PPDB.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 shrink-0">
+                        <a href="<?= base_url('admin/backup-db'); ?>" 
+                           class="px-5 py-3 rounded-xl bg-[#0066CC] hover:bg-[#0052A3] text-white text-xs font-bold shadow-lg shadow-[#0066CC]/30 transition flex items-center gap-2.5 cursor-pointer">
+                            <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+                            <span>Unduh Salinan Database (.sql)</span>
+                        </a>
+                    </div>
+                </div>
             </section>
 
             <!-- ============ FORMULA BANNER ============ -->

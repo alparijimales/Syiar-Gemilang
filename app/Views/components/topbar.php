@@ -55,11 +55,34 @@ if (empty($topbar_user_role)) {
     $topbar_user_role = 'Admin / Instruktur';
 }
 
-// Avatar Gambar (URL / Path)
+// Avatar Gambar (URL / Path) - Resolusi Dinamis Sesuai Peran
 $topbar_user_avatar = $userData['avatar']
     ?? $userData['photo']
     ?? $userData['foto']
     ?? (function_exists('session') && session()->has('avatar') ? session()->get('avatar') : null);
+
+if (empty($topbar_user_avatar) && function_exists('session') && session()->has('user_id')) {
+    $db = \Config\Database::connect();
+    $sessUserId = (int)session()->get('user_id');
+    $sessRole = (string)session()->get('role');
+    $sessSantriId = session()->get('santri_id');
+
+    // Jika santri atau wali santri: ambil foto santri dari tabel nilai_santri
+    if (in_array($sessRole, ['siswa', 'wali_santri']) && !empty($sessSantriId)) {
+        $st = $db->table('nilai_santri')->select('foto')->where('id', $sessSantriId)->get()->getRowArray();
+        if ($st && !empty($st['foto']) && file_exists(FCPATH . 'uploads/santri/' . $st['foto'])) {
+            $topbar_user_avatar = base_url('uploads/santri/' . $st['foto']);
+        }
+    }
+
+    // Jika instruktur atau admin atau custom avatar
+    if (empty($topbar_user_avatar)) {
+        $u = $db->table('users')->select('avatar')->where('id', $sessUserId)->get()->getRowArray();
+        if ($u && !empty($u['avatar']) && file_exists(FCPATH . 'uploads/avatars/' . $u['avatar'])) {
+            $topbar_user_avatar = base_url('uploads/avatars/' . $u['avatar']);
+        }
+    }
+}
 
 // Avatar Inisial Huruf
 $topbar_user_initial = $userData['initial'] ?? null;
@@ -68,6 +91,17 @@ if (empty($topbar_user_initial)) {
     $topbar_user_initial = !empty($cleanName) ? strtoupper(mb_substr($cleanName, 0, 1, 'UTF-8')) : 'A';
 }
 
+// Format Role Akademik Elegan
+$academicRoleBadge = [
+    'admin'            => '<span class="inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#0066CC]"><i class="fa-solid fa-shield-halved text-[9.5px]"></i> Admin Akademik</span>',
+    'instruktur'       => '<span class="inline-flex items-center gap-1 text-[10.5px] font-semibold text-emerald-700"><i class="fa-solid fa-chalkboard-user text-[9.5px]"></i> Instruktur Kejuruan</span>',
+    'pendamping_agama' => '<span class="inline-flex items-center gap-1 text-[10.5px] font-semibold text-teal-700"><i class="fa-solid fa-book-quran text-[9.5px]"></i> Pendamping Agama</span>',
+    'siswa'            => '<span class="inline-flex items-center gap-1 text-[10.5px] font-semibold text-sky-700"><i class="fa-solid fa-user-graduate text-[9.5px]"></i> Santri Diklat</span>',
+    'wali_santri'      => '<span class="inline-flex items-center gap-1 text-[10.5px] font-semibold text-indigo-700"><i class="fa-solid fa-hands-holding-child text-[9.5px]"></i> Wali Santri</span>'
+];
+$rawRole = function_exists('session') && session()->has('role') ? strtolower((string)session()->get('role')) : 'admin';
+$academicRoleHtml = $academicRoleBadge[$rawRole] ?? '<span class="text-[10.5px] font-semibold text-slate-500">' . esc($topbar_user_role) . '</span>';
+
 // 3. Badge Dinamis
 $topbar_badge = $portal_badge ?? 'Syiar Gemilang • Portal Akademik';
 $topbar_badge_icon = $portal_badge_icon ?? 'fa-solid fa-graduation-cap';
@@ -75,20 +109,21 @@ $topbar_tahun_ajaran = $tahun_ajaran ?? '2026/2027 (Ganjil)';
 ?>
 
 <!-- ===================== TOP NAVBAR ===================== -->
-<header class="relative z-20 min-h-[64px] shrink-0 flex items-center justify-between gap-3 border-b border-[#E2E8F0] bg-white px-4 sm:px-6">
-    <div class="flex min-w-0 items-center gap-2 sm:gap-3">
+<header class="relative z-20 h-16 shrink-0 flex items-center justify-between gap-3 border-b border-slate-200/90 bg-white/95 backdrop-blur-md px-4 sm:px-6">
+    <div class="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
         <!-- Tombol Hamburger Mobile -->
-        <button type="button" onclick="toggleMobileSidebar()" class="lg:hidden p-2 -ml-1 text-slate-600 hover:text-brand hover:bg-slate-100 rounded-lg transition" aria-label="Buka Menu Navigasi">
+        <button type="button" onclick="toggleMobileSidebar()" class="lg:hidden p-2 -ml-1 text-slate-600 hover:text-[#007ACE] hover:bg-slate-100 rounded-xl transition cursor-pointer" aria-label="Buka Menu Navigasi">
             <i class="fa-solid fa-bars text-lg"></i>
         </button>
 
-        <!-- Judul Halaman -->
-        <h1 class="sg-display truncate text-lg font-extrabold tracking-tight text-[#1E293B]"><?= esc($topbar_title); ?></h1>
-
-        <!-- Badge Portal Akademik -->
-        <span class="hidden xl:inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-[#0066CC]/20 bg-[#0066CC]/10 px-3 py-1 text-xs font-semibold text-[#0052A3]">
-            <i class="<?= esc($topbar_badge_icon); ?>" aria-hidden="true"></i> <?= esc($topbar_badge); ?>
-        </span>
+        <!-- Brand Icon & Judul Halaman Portal Akademik -->
+        <div class="flex items-center gap-2.5 min-w-0">
+            <img src="<?= base_url('assets/img/rgi.png'); ?>" alt="Logo Syiar Gemilang" class="w-8 h-8 rounded-xl object-contain shadow-xs shrink-0" title="Syiar Gemilang Portal Akademik">
+            <div class="leading-tight min-w-0">
+                <h1 class="sg-display truncate text-base sm:text-lg font-extrabold tracking-tight text-[#04243F]"><?= esc($topbar_title); ?></h1>
+                <p class="text-3xs text-slate-400 font-semibold tracking-wide hidden sm:block truncate">Syiar Gemilang • Portal Akademik</p>
+            </div>
+        </div>
     </div>
 
     <div class="flex shrink-0 items-center gap-2 sm:gap-3">
@@ -96,71 +131,90 @@ $topbar_tahun_ajaran = $tahun_ajaran ?? '2026/2027 (Ganjil)';
             <?= $topbar_extra_right; ?>
         <?php endif; ?>
 
-        <!-- Badge Tahun Ajaran -->
-        <span class="hidden xl:inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#0066CC]/20 bg-[#0066CC]/10 px-3.5 py-1.5 text-xs font-semibold text-[#0052A3]">
-            <i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Tahun Ajaran: <?= esc($topbar_tahun_ajaran); ?>
-        </span>
-
-        <!-- Tombol Cepat Ganti Password -->
-        <a href="<?= base_url('ganti-password'); ?>" 
-           title="Pengaturan & Ganti Kata Sandi" 
-           class="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-[#475569] transition-colors duration-200 hover:bg-[#0066CC]/10 hover:text-[#0066CC] active:text-[#003E7E]">
-            <i class="fa-solid fa-key text-base" aria-hidden="true"></i>
-        </a>
+        <!-- Badge Tahun Ajaran (Academic Term Badge) -->
+        <div class="hidden xl:inline-flex items-center divide-x divide-slate-200 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-2xs">
+            <span class="px-2.5 py-1 text-slate-700 font-bold flex items-center gap-1.5"><i class="fa-solid fa-calendar-check text-[#007ACE] text-[11px]"></i> TA 2026/2027</span>
+            <span class="px-2.5 py-1 text-slate-500 text-2xs">Semester Ganjil</span>
+        </div>
 
         <!-- Ikon & Dropdown Notifikasi -->
         <div class="relative">
             <button type="button" id="sgNotifBtn"
-                    class="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-[#475569] transition-colors duration-200 hover:bg-[#0066CC]/10 hover:text-[#0066CC] active:text-[#003E7E]"
+                    class="inline-flex h-9 w-9 sm:h-10 sm:w-10 cursor-pointer items-center justify-center rounded-xl text-slate-500 transition-colors duration-200 hover:bg-[#007ACE]/10 hover:text-[#007ACE] active:text-[#04243F]"
                     aria-label="Notifikasi" aria-haspopup="true" aria-expanded="false" aria-controls="sgNotifPanel">
-                <i class="fa-regular fa-bell text-lg" aria-hidden="true"></i>
+                <i class="fa-regular fa-bell text-base sm:text-lg" aria-hidden="true"></i>
             </button>
             <div id="sgNotifPanel" role="region" aria-label="Daftar notifikasi"
-                 class="hidden absolute right-0 top-full z-30 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-[0_12px_32px_-8px_rgba(15,23,42,0.18)]">
-                <p class="sg-display text-sm font-bold text-[#1E293B]">Notifikasi</p>
+                 class="hidden absolute right-0 top-full z-30 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_16px_36px_-8px_rgba(4,36,63,0.18)]">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <p class="sg-display text-sm font-bold text-slate-800">Pemberitahuan</p>
+                    <span class="text-3xs font-semibold text-slate-400 uppercase tracking-wider">Terbaru</span>
+                </div>
                 <div class="flex flex-col items-center px-2 py-7 text-center">
-                    <span class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#0066CC]/10 text-[#0066CC]">
-                        <i class="fa-regular fa-bell-slash" aria-hidden="true"></i>
+                    <span class="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#007ACE]/10 text-[#007ACE]">
+                        <i class="fa-regular fa-bell-slash text-base" aria-hidden="true"></i>
                     </span>
-                    <p class="text-sm font-semibold text-[#1E293B]">Belum ada notifikasi baru</p>
-                    <p class="mt-1 text-xs leading-relaxed text-[#64748B]">Pemberitahuan akademik akan muncul di sini.</p>
+                    <p class="text-sm font-bold text-slate-800">Belum Ada Notifikasi Baru</p>
+                    <p class="mt-1 text-xs leading-relaxed text-slate-500">Pemberitahuan presensi, nilai, dan agenda diklat akan muncul di sini.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Profil Pengguna & Dropdown Menu -->
-        <div class="relative border-l border-[#E2E8F0] pl-2 sm:pl-3">
+        <!-- Profil Pengguna & Dropdown Menu (Academic Credential Card) -->
+        <div class="relative pl-1">
             <button type="button" id="sgUserMenuBtn" onclick="toggleUserDropdownMenu()" 
-                    class="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-100 transition cursor-pointer text-left">
-                <?php if (!empty($topbar_user_avatar)): ?>
-                    <img src="<?= esc($topbar_user_avatar); ?>" alt="<?= esc($topbar_user_name); ?>" class="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-[#0066CC]/20">
-                <?php else: ?>
-                    <span class="sg-display inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0066CC] text-sm font-bold text-white shadow-sm" aria-hidden="true"><?= esc($topbar_user_initial); ?></span>
-                <?php endif; ?>
-                <div class="hidden min-w-0 leading-tight sm:block">
-                    <p class="truncate text-sm font-semibold text-[#1E293B] max-w-[140px]"><?= esc($topbar_user_name); ?></p>
-                    <p class="text-xs text-[#64748B]"><?= esc($topbar_user_role); ?></p>
+                    class="group relative flex items-center gap-2.5 py-1 px-2 sm:pr-3 rounded-lg bg-white hover:bg-slate-50 border border-slate-200/90 border-l-[3px] border-l-[#007ACE] shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer text-left"
+                    aria-label="Menu Profil Pengguna">
+                <!-- Avatar / Foto Profil Resmi (Academic Pass Frame) -->
+                <div class="relative w-9 h-10 rounded-md overflow-hidden ring-1 ring-[#04243F]/20 shadow-xs shrink-0 bg-gradient-to-b from-[#007ACE] to-[#04243F] flex items-center justify-center text-white" title="<?= esc($topbar_user_name); ?>">
+                    <?php if (!empty($topbar_user_avatar)): ?>
+                        <img src="<?= esc($topbar_user_avatar); ?>" alt="<?= esc($topbar_user_name); ?>" class="w-full h-full object-cover">
+                    <?php else: ?>
+                        <span class="font-disp font-black text-sm tracking-tight text-[#FFD23F]"><?= esc($topbar_user_initial); ?></span>
+                    <?php endif; ?>
                 </div>
-                <i class="fa-solid fa-chevron-down text-2xs text-slate-400 hidden sm:block"></i>
+
+                <div class="hidden min-w-0 leading-tight sm:block pr-1">
+                    <p class="truncate text-xs sm:text-[13px] font-bold text-[#04243F] group-hover:text-[#007ACE] transition-colors max-w-[140px] tracking-tight">
+                        <?= esc($topbar_user_name); ?>
+                    </p>
+                    <div class="mt-0.5">
+                        <?= $academicRoleHtml; ?>
+                    </div>
+                </div>
+
+                <!-- Academic Chevron Indicator -->
+                <i class="fa-solid fa-chevron-down text-3xs text-slate-400 group-hover:text-[#007ACE] transition-transform duration-200 group-hover:translate-y-0.5 hidden sm:block"></i>
             </button>
 
-            <!-- Dropdown Menu Profil & Setting Password -->
+            <!-- Dropdown Menu Profil & Pengaturan Akun -->
             <div id="sgUserDropdownMenu" 
-                 class="hidden absolute right-0 top-full z-30 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_12px_32px_-8px_rgba(15,23,42,0.18)]">
-                <div class="px-3 py-2 border-b border-slate-100 mb-1">
-                    <p class="text-xs font-bold text-slate-800 truncate"><?= esc($topbar_user_name); ?></p>
-                    <span class="inline-block mt-0.5 text-3xs font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-[#0052A3]">
-                        <?= esc($topbar_user_role); ?>
-                    </span>
+                 class="hidden absolute right-0 top-full z-30 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                <div class="px-3 py-2.5 border-b border-slate-100 mb-1.5 bg-slate-50/80 rounded-lg flex items-center gap-2.5">
+                    <div class="w-9 h-10 rounded-md overflow-hidden shrink-0 ring-1 ring-[#04243F]/20 bg-gradient-to-b from-[#007ACE] to-[#04243F] flex items-center justify-center text-white">
+                        <?php if (!empty($topbar_user_avatar)): ?>
+                            <img src="<?= esc($topbar_user_avatar); ?>" alt="<?= esc($topbar_user_name); ?>" class="w-full h-full object-cover">
+                        <?php else: ?>
+                            <span class="font-bold text-xs text-[#FFD23F]"><?= esc($topbar_user_initial); ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="min-w-0 leading-tight">
+                        <p class="text-xs font-bold text-slate-900 truncate"><?= esc($topbar_user_name); ?></p>
+                        <p class="text-3xs text-slate-500 truncate mt-0.5">@<?= esc(function_exists('session') && session()->has('username') ? session()->get('username') : 'user'); ?></p>
+                        <div class="mt-1">
+                            <?= $academicRoleHtml; ?>
+                        </div>
+                    </div>
                 </div>
-                <button type="button" onclick="openGlobalPasswordModal()" 
-                        class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-brand hover:bg-[#0066CC]/10 rounded-lg transition text-left cursor-pointer">
-                    <i class="fa-solid fa-key text-brand text-xs w-4 text-center"></i> Ganti Password
-                </button>
-                <a href="<?= base_url('ganti-password'); ?>" 
-                   class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-brand hover:bg-[#0066CC]/10 rounded-lg transition">
-                    <i class="fa-solid fa-user-gear text-slate-500 text-xs w-4 text-center"></i> Halaman Sandi
+
+                <a href="<?= base_url('profil'); ?>" 
+                   class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#007ACE] hover:bg-[#007ACE]/10 rounded-lg transition">
+                    <i class="fa-solid fa-user-pen text-[#007ACE] text-xs w-4 text-center"></i> Pengaturan Profil & Foto
                 </a>
+                <button type="button" onclick="openGlobalPasswordModal()" 
+                        class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#007ACE] hover:bg-[#007ACE]/10 rounded-lg transition text-left cursor-pointer">
+                    <i class="fa-solid fa-key text-slate-500 text-xs w-4 text-center"></i> Ganti Kata Sandi
+                </button>
                 <div class="border-t border-slate-100 my-1"></div>
                 <a href="<?= base_url('logout'); ?>" 
                    class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition">

@@ -28,11 +28,11 @@
             ],
             'badge' => 'Lembaga Pendidikan E-RGI Syiar Gemilang',
             'title' => 'Input & Evaluasi Nilai Santri',
-            'subtitle' => 'Pencatatan dan pembaruan berkala nilai akademik 4 mata pelajaran dan pembobotan adab santri untuk evaluasi capaian kompetensi.',
+            'subtitle' => 'Pencatatan dan pembaruan berkala nilai akademik mata diklat dan pembobotan adab santri untuk evaluasi capaian kompetensi.',
             'extra_action' => $extra_download_nilai,
             'stats' => [
                 ['icon' => 'fa-solid fa-users', 'bg' => 'bg-sky-400/20 text-sky-200', 'value' => count($data_siswa ?? []), 'label' => 'Santri Dinilai'],
-                ['icon' => 'fa-solid fa-book-open', 'bg' => 'bg-emerald-400/20 text-emerald-200', 'value' => $total_mapel ?? 4, 'label' => 'Mata Pelajaran'],
+                ['icon' => 'fa-solid fa-book-open', 'bg' => 'bg-emerald-400/20 text-emerald-200', 'value' => $total_mapel ?? 5, 'label' => 'Mata Diklat'],
                 ['icon' => 'fa-solid fa-chart-line', 'bg' => 'bg-amber-400/20 text-amber-200', 'value' => $rata_rata, 'label' => 'Rata-rata Nilai'],
             ]
         ];
@@ -94,7 +94,7 @@
                     <h3 class="text-base font-bold text-slate-800 flex items-center gap-2 sg-display">
                         <i class="fa-solid fa-list-check text-emerald-600"></i> Daftar Penilaian Nilai Santri
                     </h3>
-                    <p class="text-xs text-slate-500">Klik tombol "Edit Nilai" pada santri untuk mengupdate nilai mata pelajaran & adab.</p>
+                    <p class="text-xs text-slate-500">Klik tombol "Edit Nilai" pada santri untuk mengupdate nilai mata diklat & adab.</p>
                 </div>
                 <!-- Search Box & Export CSV -->
                 <div class="flex items-center gap-2.5">
@@ -145,7 +145,8 @@
                             <td class="py-2.5 px-3 text-center border-r border-slate-200 font-medium text-slate-500"><?= $idx + 1; ?></td>
                             <td class="py-2.5 px-3 border-r border-slate-200 font-bold text-slate-800 nama-col"><?= esc($s['nama']); ?></td>
                             <td class="py-2.5 px-3 border-r border-slate-200 kelas-col">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-3xs font-semibold border <?= $bdg; ?>">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-semibold border <?= $bdg; ?> shadow-2xs">
+                                    <i class="fa-solid fa-graduation-cap text-[10px]"></i>
                                     <?= esc($s['kelas']); ?>
                                 </span>
                             </td>
@@ -231,7 +232,7 @@
                     <label class="block text-xs font-bold text-amber-900">
                         <i class="fa-solid fa-award mr-1 text-amber-600"></i> Nilai Adab & Akhlaq
                     </label>
-                    <span class="text-2xs font-extrabold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">Bobot 20%</span>
+                    <span class="text-2xs font-extrabold bg-amber-500/10 text-amber-900 px-2 py-0.5 rounded border border-amber-500/30 font-mono">Bobot 20%</span>
                 </div>
                 <p class="text-2xs text-amber-800">Menentukan 20% nilai rata-rata akhir santri.</p>
                 <input type="number" step="0.1" min="0" max="100" name="adab_akhlaq" id="edit_adab_akhlaq" required

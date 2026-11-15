@@ -20,6 +20,8 @@ class Home extends BaseController
                     return redirect()->to(base_url('siswa'));
                 case 'wali_santri':
                     return redirect()->to(base_url('wali'));
+                case 'pendamping_agama':
+                    return redirect()->to(base_url('pendamping'));
                 default:
                     return redirect()->to(base_url('login'));
             }

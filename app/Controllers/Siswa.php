@@ -11,11 +11,8 @@ class Siswa extends BaseController
         $studentModel = new StudentModel();
         $santriId = (int)session()->get('santri_id');
 
-        // Ambil data nilai santri yang sedang login dengan formula terbobot
-        $santri = $studentModel->select('id, nama, nis, cabang, kelas, angkatan, status, foto, tauhid, b_ing, menulis_kreatif, fiqih, adab_akhlaq, kehadiran,
-            ROUND((tauhid + b_ing + menulis_kreatif + fiqih) / 4, 2) as rata_akademik,
-            ROUND((((tauhid + b_ing + menulis_kreatif + fiqih) / 4 * 0.8) + (adab_akhlaq * 0.2)), 2) as rata_rata')
-            ->find($santriId);
+        // Ambil data nilai santri yang sedang login dengan formula terbobot 5 mapel + detail kejuruan
+        $santri = $studentModel->getStudentById($santriId);
 
         if (!$santri) {
             return redirect()->to('/login')->with('error', 'Data santri Anda tidak ditemukan.');
@@ -58,17 +55,25 @@ class Siswa extends BaseController
             return ($l['status'] ?? '') === 'Absen';
         }));
 
+        $hafalanModel = new \App\Models\HafalanModel();
+        $mapelModel   = new \App\Models\MapelModel();
+
+        $santriHafalan    = $hafalanModel->getSetoranBySantriId($santriId);
+        $santriKompetensi = $mapelModel->getNilaiKompetensiBySantri($santriId);
+
         $data = [
-            'title'            => 'Dashboard Santri',
-            'santri'           => $santri,
-            'rank'             => $rankPosition,
-            'total_siswa'      => $studentModel->countAll(),
-            'my_logs'          => $myLogs,
-            'my_rekap'         => $myRekap,
-            'sesi_kehadiran'   => $studentModel->getSesiKehadiran(),
-            'absen_count'      => $absenCount,
-            'is_warning_absen' => $isWarningAbsen,
-            'absen_logs'       => $absenLogs,
+            'title'             => 'Dashboard Santri',
+            'santri'            => $santri,
+            'rank'              => $rankPosition,
+            'total_siswa'       => $studentModel->countAll(),
+            'my_logs'           => $myLogs,
+            'my_rekap'          => $myRekap,
+            'sesi_kehadiran'    => $studentModel->getSesiKehadiran(),
+            'absen_count'       => $absenCount,
+            'is_warning_absen'  => $isWarningAbsen,
+            'absen_logs'        => $absenLogs,
+            'santri_hafalan'    => $santriHafalan,
+            'santri_kompetensi' => $santriKompetensi,
         ];
 
         return view('siswa/dashboard', $data);

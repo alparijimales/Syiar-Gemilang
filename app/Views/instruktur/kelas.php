@@ -94,7 +94,7 @@
             ],
             'badge' => 'Lembaga Pendidikan E-RGI Syiar Gemilang',
             'title' => 'Direktori & Capaian Nilai Kelas',
-            'subtitle' => 'Pemantauan komprehensif performa 4 mata pelajaran akademik, evaluasi adab & akhlaq (bobot 20%), serta rekapitulasi presensi santri pada 6 kejuruan.',
+            'subtitle' => 'Pemantauan komprehensif performa mata diklat pokok & kejuruan, evaluasi adab & akhlaq (bobot 20%), serta rekapitulasi presensi santri pada 6 kejuruan.',
             'extra_action' => $hero_actions,
             'stats' => [
                 ['icon' => 'fa-solid fa-users', 'bg' => 'bg-sky-400/20 text-sky-200', 'value' => $total_siswa, 'label' => 'Santri Terdaftar'],
@@ -108,16 +108,16 @@
 
         <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
 
-            <!-- ================= RINGKASAN CAPAIAN 4 MAPEL & KARAKTER (KOMPAK & BERSIH) ================= -->
+            <!-- ================= RINGKASAN CAPAIAN 4 MATA DIKLAT POKOK & KARAKTER (KOMPAK & BERSIH) ================= -->
             <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                             <span class="w-2 h-4 rounded-full bg-[#0066CC]"></span>
-                            Standar Capaian 4 Mapel Pokok & Karakter
+                            Standar Capaian 4 Mata Diklat Pokok & Karakter
                         </h2>
                         <p class="text-xs text-slate-500 mt-0.5">
-                            Formula Nilai Akhir: <span class="font-semibold text-slate-700">(Rata-rata 4 Mapel × 80%) + (Adab & Akhlaq × 20%)</span> • Standar KKM: 75 (Adab: 80)
+                            Formula Nilai Akhir: <span class="font-semibold text-slate-700">(Rata-rata Mata Diklat × 80%) + (Adab & Akhlaq × 20%)</span> • Standar KKM: 75 (Adab: 80)
                         </p>
                     </div>
                     <span class="text-3xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg self-start sm:self-auto">
@@ -364,6 +364,7 @@
                                     <th class="py-3 px-2.5 text-center">Fiqih</th>
                                     <th class="py-3 px-2.5 text-center">B.Ing</th>
                                     <th class="py-3 px-2.5 text-center">Menulis</th>
+                                    <th class="py-3 px-2.5 text-center bg-blue-50/60 text-[#0066CC]">Kejuruan</th>
                                     <th class="py-3 px-3 text-center bg-rose-50/60 text-rose-700">Adab (20%)</th>
                                     <th class="py-3 px-3 text-center bg-brand-light/60 text-brand">Nilai Akhir</th>
                                     <th class="py-3 px-3 text-center">Kehadiran</th>
@@ -472,12 +473,12 @@
                 <div class="p-3 bg-brand-light/40 border border-brand-border/60 rounded-xl">
                     <span class="text-3xs text-slate-500 font-semibold block uppercase">Nilai Akhir Terbobot</span>
                     <span class="text-xl sm:text-2xl font-extrabold text-[#0066CC] block mt-0.5" id="modalNilaiAkhir">88.50</span>
-                    <span class="text-3xs text-slate-400">80% Mapel + 20% Adab</span>
+                    <span class="text-3xs text-slate-400">80% Diklat + 20% Adab</span>
                 </div>
                 <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
                     <span class="text-3xs text-slate-500 font-semibold block uppercase">Akademik (80%)</span>
                     <span class="text-xl sm:text-2xl font-extrabold text-slate-800 block mt-0.5" id="modalRataAkademik">87.50</span>
-                    <span class="text-3xs text-slate-400">Rata-rata 4 Mapel</span>
+                    <span class="text-3xs text-slate-400">Rata-rata Mata Diklat</span>
                 </div>
                 <div class="p-3 bg-rose-50/50 border border-rose-200/60 rounded-xl">
                     <span class="text-3xs text-rose-700 font-semibold block uppercase">Adab & Akhlaq (20%)</span>
@@ -486,11 +487,11 @@
                 </div>
             </div>
 
-            <!-- Rincian 4 Mapel Pokok (Tabel Raport Bersih) -->
+            <!-- Rincian 4 Mata Diklat Pokok (Tabel Raport Bersih) -->
             <div>
                 <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
                     <span class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-graduation-cap text-[#0066CC]"></i> Capaian 4 Mata Pelajaran Pokok
+                        <i class="fa-solid fa-graduation-cap text-[#0066CC]"></i> Capaian 4 Mata Diklat Pokok
                     </span>
                     <span class="text-3xs text-slate-400 font-normal">Standar KKM: 75 / 100</span>
                 </h4>
@@ -499,7 +500,7 @@
                     <table class="w-full text-left text-xs">
                         <thead class="bg-slate-50 text-slate-500 border-b border-slate-200 text-3xs uppercase font-bold">
                             <tr>
-                                <th class="py-2.5 px-3">Mata Pelajaran</th>
+                                <th class="py-2.5 px-3">Mata Diklat</th>
                                 <th class="py-2.5 px-2.5 text-center w-20">KKM</th>
                                 <th class="py-2.5 px-3 text-center w-24">Nilai Santri</th>
                                 <th class="py-2.5 px-3 text-center w-24">Status</th>
@@ -522,7 +523,7 @@
                                 <td class="py-2.5 px-2.5 text-center text-slate-500 font-medium">75</td>
                                 <td class="py-2.5 px-3 text-center font-bold text-emerald-700" id="modalScoreTauhid">89</td>
                                 <td class="py-2.5 px-3 text-center">
-                                    <span id="modalStatusTauhid" class="px-2 py-0.5 rounded-full text-3xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <span id="modalStatusTauhid" class="px-2 py-0.5 rounded text-2xs font-semibold bg-emerald-500/10 text-emerald-950 border border-emerald-500/30">
                                         Tuntas
                                     </span>
                                 </td>
@@ -544,7 +545,7 @@
                                 <td class="py-2.5 px-2.5 text-center text-slate-500 font-medium">75</td>
                                 <td class="py-2.5 px-3 text-center font-bold text-[#0066CC]" id="modalScoreFiqih">90</td>
                                 <td class="py-2.5 px-3 text-center">
-                                    <span id="modalStatusFiqih" class="px-2 py-0.5 rounded-full text-3xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                    <span id="modalStatusFiqih" class="px-2 py-0.5 rounded text-2xs font-semibold bg-sky-500/10 text-sky-950 border border-sky-500/30">
                                         Tuntas
                                     </span>
                                 </td>
@@ -566,7 +567,7 @@
                                 <td class="py-2.5 px-2.5 text-center text-slate-500 font-medium">75</td>
                                 <td class="py-2.5 px-3 text-center font-bold text-indigo-700" id="modalScoreBing">85</td>
                                 <td class="py-2.5 px-3 text-center">
-                                    <span id="modalStatusBing" class="px-2 py-0.5 rounded-full text-3xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                    <span id="modalStatusBing" class="px-2 py-0.5 rounded text-2xs font-semibold bg-indigo-500/10 text-indigo-950 border border-indigo-500/30">
                                         Tuntas
                                     </span>
                                 </td>
@@ -588,11 +589,39 @@
                                 <td class="py-2.5 px-2.5 text-center text-slate-500 font-medium">75</td>
                                 <td class="py-2.5 px-3 text-center font-bold text-amber-700" id="modalScoreMenulis">87</td>
                                 <td class="py-2.5 px-3 text-center">
-                                    <span id="modalStatusMenulis" class="px-2 py-0.5 rounded-full text-3xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                    <span id="modalStatusMenulis" class="px-2 py-0.5 rounded text-2xs font-semibold bg-amber-500/10 text-amber-900 border border-amber-500/30">
                                         Tuntas
                                     </span>
                                 </td>
                             </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Rincian Mata Diklat Kejuruan (Dinamis Sesuai Jurusan Santri) -->
+            <div>
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-layer-group text-[#0066CC]"></i> <span id="modalTitleMataDiklatKejuruan">Capaian Mata Diklat Kejuruan</span>
+                    </span>
+                    <span class="text-3xs text-slate-400 font-normal">Standar KKM: 75 / 100</span>
+                </h4>
+
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 border-b border-slate-200 text-3xs uppercase font-bold">
+                            <tr>
+                                <th class="py-2.5 px-3">Mata Diklat Kejuruan</th>
+                                <th class="py-2.5 px-2 text-center w-16">Tugas</th>
+                                <th class="py-2.5 px-2 text-center w-16">Teori</th>
+                                <th class="py-2.5 px-2 text-center w-16">Praktik</th>
+                                <th class="py-2.5 px-2.5 text-center w-20 bg-blue-50/50 text-[#0066CC]">Nilai Akhir</th>
+                                <th class="py-2.5 px-3 text-center w-24">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalKejuruanTableBody" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically via JS -->
                         </tbody>
                     </table>
                 </div>
@@ -912,7 +941,7 @@
                             </span>
                         </div>
 
-                        <!-- Mini 4 Mapel Scores -->
+                        <!-- Mini 4 Mata Diklat Pokok Scores -->
                         <div class="grid grid-cols-4 gap-1.5 text-center my-2.5">
                             <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-100">
                                 <span class="text-3xs text-slate-400 block font-medium">Tauhid</span>
@@ -931,6 +960,36 @@
                                 <span class="text-xs font-bold text-slate-700">${s.menulis_kreatif}</span>
                             </div>
                         </div>
+
+                        <!-- Mata Diklat Kejuruan Masing-Masing -->
+                        ${(() => {
+                            if (!Array.isArray(s.mapel_kejuruan) || s.mapel_kejuruan.length === 0) return '';
+                            const colsClass = s.mapel_kejuruan.length >= 4 ? 'grid-cols-2' : (s.mapel_kejuruan.length === 3 ? 'grid-cols-3' : 'grid-cols-2');
+                            return `
+                                <div class="my-2 p-2 bg-blue-50/50 rounded-xl border border-blue-100/80">
+                                    <div class="flex items-center justify-between mb-1.5 px-0.5">
+                                        <span class="text-[10px] font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1">
+                                            <i class="fa-solid fa-graduation-cap text-[#0066CC]"></i> Diklat Kejuruan (${s.mapel_kejuruan.length})
+                                        </span>
+                                        <span class="text-[10px] font-extrabold text-[#0066CC] tabular-nums">
+                                            Rata-rata: ${parseFloat(s.nilai_kejuruan || 0).toFixed(1)}
+                                        </span>
+                                    </div>
+                                    <div class="grid ${colsClass} gap-1.5">
+                                        ${s.mapel_kejuruan.map(mk => `
+                                            <div class="bg-white px-2 py-1.5 rounded-lg border border-blue-100 flex items-center justify-between text-2xs shadow-2xs">
+                                                <span class="font-semibold text-slate-700 truncate pr-1" title="${mk.nama_mapel}">
+                                                    ${mk.alias || mk.nama_mapel}
+                                                </span>
+                                                <span class="font-bold text-[#0066CC] tabular-nums shrink-0">
+                                                    ${parseFloat(mk.nilai_akhir || 0).toFixed(1)}
+                                                </span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        })()}
 
                         <!-- Adab & Kehadiran Strip -->
                         <div class="flex items-center justify-between text-2xs px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-100">
@@ -1003,8 +1062,8 @@
                         </div>
                     </td>
                     <td class="py-3 px-4">
-                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-3xs font-semibold border ${theme.badge}">
-                            <span class="w-1.5 h-1.5 rounded-full ${theme.dot || 'bg-slate-400'}"></span>
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-2xs font-semibold border ${theme.badge} shadow-2xs">
+                            <i class="fa-solid fa-graduation-cap text-[10px]"></i>
                             ${s.kelas}
                         </span>
                     </td>
@@ -1012,6 +1071,7 @@
                     <td class="py-3 px-2.5 text-center font-semibold text-slate-700">${s.fiqih}</td>
                     <td class="py-3 px-2.5 text-center font-semibold text-slate-700">${s.b_ing}</td>
                     <td class="py-3 px-2.5 text-center font-semibold text-slate-700">${s.menulis_kreatif}</td>
+                    <td class="py-3 px-2.5 text-center font-bold text-[#0066CC] bg-blue-50/40 tabular-nums" title="${s.mapel_kejuruan ? s.mapel_kejuruan.map(m => (m.alias || m.nama_mapel) + ': ' + m.nilai_akhir).join(', ') : ''}">${parseFloat(s.nilai_kejuruan || 0).toFixed(1)}</td>
                     <td class="py-3 px-3 text-center font-bold text-rose-700 bg-rose-50/30">${s.adab_akhlaq}</td>
                     <td class="py-3 px-3 text-center font-extrabold text-[#0066CC] bg-brand-light/30">
                         ${parseFloat(s.rata_rata).toFixed(2)}
@@ -1076,7 +1136,7 @@
         document.getElementById('modalRataAkademik').textContent = parseFloat(academicAvg).toFixed(2);
         document.getElementById('modalNilaiAdab').textContent = parseFloat(student.adab_akhlaq).toFixed(2);
 
-        // Nilai 4 Mapel
+        // Nilai 4 Mata Diklat Pokok
         document.getElementById('modalScoreTauhid').textContent = student.tauhid;
         updateStatusBadge('modalStatusTauhid', student.tauhid, 75);
 
@@ -1088,6 +1148,46 @@
 
         document.getElementById('modalScoreMenulis').textContent = student.menulis_kreatif;
         updateStatusBadge('modalStatusMenulis', student.menulis_kreatif, 75);
+
+        // Populate Mata Diklat Kejuruan Dinamis Sesuai Jurusan Santri
+        const kejuruanBody = document.getElementById('modalKejuruanTableBody');
+        const titleKejuruan = document.getElementById('modalTitleMataDiklatKejuruan');
+        const listK = Array.isArray(student.mapel_kejuruan) && student.mapel_kejuruan.length > 0
+            ? student.mapel_kejuruan
+            : [];
+
+        if (titleKejuruan) {
+            titleKejuruan.textContent = `Capaian ${listK.length} Mata Diklat Kejuruan (${student.kelas})`;
+        }
+
+        if (kejuruanBody) {
+            if (listK.length === 0) {
+                kejuruanBody.innerHTML = `<tr><td colspan="6" class="py-3 px-3 text-center text-slate-400">Tidak ada data mata diklat kejuruan.</td></tr>`;
+            } else {
+                kejuruanBody.innerHTML = listK.map(mk => {
+                    const akhir = parseFloat(mk.nilai_akhir || 0);
+                    const isTuntas = akhir >= 75;
+                    const statusBadge = isTuntas 
+                        ? `<span class="px-2 py-0.5 rounded text-2xs font-semibold bg-emerald-500/10 text-emerald-950 border border-emerald-500/30">Tuntas</span>`
+                        : `<span class="px-2 py-0.5 rounded text-2xs font-semibold bg-amber-500/10 text-amber-900 border border-amber-500/30">Remedial</span>`;
+                    return `
+                        <tr class="hover:bg-slate-50/60 transition">
+                            <td class="py-2.5 px-3 font-semibold text-slate-800">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-1.5 py-0.5 rounded text-3xs font-bold bg-blue-100 text-blue-800 shrink-0">${mk.kode_mapel || 'MD'}</span>
+                                    <span class="truncate">${mk.nama_mapel}</span>
+                                </div>
+                            </td>
+                            <td class="py-2.5 px-2 text-center text-slate-600 font-medium tabular-nums">${parseFloat(mk.nilai_tugas || 0).toFixed(0)}</td>
+                            <td class="py-2.5 px-2 text-center text-slate-600 font-medium tabular-nums">${parseFloat(mk.nilai_teori || 0).toFixed(0)}</td>
+                            <td class="py-2.5 px-2 text-center text-slate-600 font-medium tabular-nums">${parseFloat(mk.nilai_praktik || 0).toFixed(0)}</td>
+                            <td class="py-2.5 px-2.5 text-center font-bold text-[#0066CC] bg-blue-50/40 tabular-nums">${akhir.toFixed(2)}</td>
+                            <td class="py-2.5 px-3 text-center">${statusBadge}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
 
         // Adab & Kehadiran Text
         const adabDesc = student.adab_akhlaq >= 85 ? 'Sangat Terpuji' : (student.adab_akhlaq >= 80 ? 'Baik' : 'Cukup');
@@ -1125,10 +1225,10 @@
         if (!el) return;
         if (parseFloat(score) >= kkm) {
             el.textContent = 'Tuntas';
-            el.className = 'px-2 py-0.5 rounded-full text-3xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200';
+            el.className = 'px-2 py-0.5 rounded text-2xs font-semibold bg-emerald-500/10 text-emerald-950 border border-emerald-500/30';
         } else {
             el.textContent = 'Remedial';
-            el.className = 'px-2 py-0.5 rounded-full text-3xs font-bold bg-amber-50 text-amber-700 border border-amber-200';
+            el.className = 'px-2 py-0.5 rounded text-2xs font-semibold bg-amber-500/10 text-amber-900 border border-amber-500/30';
         }
     }
 
@@ -1146,6 +1246,13 @@
         const pred = getPredikat(parseFloat(s.rata_rata));
         const nis = s.nis || `SG-2026-${String(s.id).padStart(3, '0')}`;
 
+        let kejuruanText = '';
+        if (Array.isArray(s.mapel_kejuruan) && s.mapel_kejuruan.length > 0) {
+            kejuruanText = `\nRincian Nilai ${s.mapel_kejuruan.length} Mata Diklat Kejuruan:\n` + 
+                s.mapel_kejuruan.map(mk => `- [${mk.kode_mapel || 'MD'}] ${mk.nama_mapel} : ${parseFloat(mk.nilai_akhir || 0).toFixed(1)} (Tugas: ${parseFloat(mk.nilai_tugas || 0).toFixed(0)}, Teori: ${parseFloat(mk.nilai_teori || 0).toFixed(0)}, Praktik: ${parseFloat(mk.nilai_praktik || 0).toFixed(0)})`).join('\n') +
+                `\nRata-rata Kejuruan : ${parseFloat(s.nilai_kejuruan || 0).toFixed(2)}\n`;
+        }
+
         const report = `====================================
 RAPORT SINGKAT SANTRI SYIAR GEMILANG
 Lembaga Pendidikan E-RGI
@@ -1154,12 +1261,12 @@ Nama Santri : ${s.nama}
 NIS         : ${nis}
 Jurusan     : ${s.kelas}
 
-Rincian Nilai 4 Mapel Pokok (Bobot 80%):
+Rincian Nilai 4 Mata Diklat Pokok (Bobot 80%):
 - Tauhid & Aqidah   : ${s.tauhid} (KKM 75)
 - Fiqih Ibadah      : ${s.fiqih} (KKM 75)
 - Bahasa Inggris    : ${s.b_ing} (KKM 75)
 - Menulis Kreatif   : ${s.menulis_kreatif} (KKM 75)
-
+${kejuruanText}
 Karakter & Presensi:
 - Adab & Akhlaq     : ${s.adab_akhlaq} (Bobot 20%)
 - Tingkat Kehadiran : ${s.kehadiran}%

@@ -107,7 +107,7 @@
                                     class="w-full pl-9 pr-8 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition appearance-none font-medium">
                                 <option value="Kampus Utama Depok" selected>Kampus Utama Depok</option>
                                 <option value="Kampus Surabaya">Kampus Surabaya</option>
-                                <option value="Kampus Aceh">Kampus Aceh</option>
+                                <!-- <option value="Kampus Aceh">Kampus Aceh</option> -->
                                 <option value="Kampus Yogyakarta">Kampus Yogyakarta</option>
                                 <option value="Kampus Magelang">Kampus Magelang</option>
                             </select>
@@ -143,64 +143,93 @@
                         <label class="block text-xs font-semibold text-slate-700 mb-1.5">
                             Kelas / Kejuruan <span class="text-red-500">*</span>
                         </label>
-                        <select name="kelas" required 
+                        <select name="kelas" id="selectKelas" onchange="renderKejuruanMapels(this.value)" required 
                                 class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition font-medium">
-                            <option value="" disabled selected>-- Pilih --</option>
-                            <option value="Teknik Komputer dan Jaringan">TKJ</option>
-                            <option value="Tata Busana">Tata Busana</option>
-                            <option value="Fotografi dan Videografi">Fotografi</option>
-                            <option value="Desain Grafis">Desain Grafis</option>
-                            <option value="Otomotif">Otomotif</option>
-                            <option value="Aplikasi Perkantoran">Perkantoran</option>
+                            <option value="" disabled selected>-- Pilih Kejuruan --</option>
+                            <option value="Teknik Komputer dan Jaringan" <?= (old('kelas') === 'Teknik Komputer dan Jaringan') ? 'selected' : ''; ?>>Teknik Komputer dan Jaringan (TKJ)</option>
+                            <option value="Tata Busana" <?= (old('kelas') === 'Tata Busana') ? 'selected' : ''; ?>>Tata Busana</option>
+                            <option value="Fotografi dan Videografi" <?= (old('kelas') === 'Fotografi dan Videografi') ? 'selected' : ''; ?>>Fotografi dan Videografi</option>
+                            <option value="Desain Grafis" <?= (old('kelas') === 'Desain Grafis') ? 'selected' : ''; ?>>Desain Grafis</option>
+                            <option value="Otomotif" <?= (old('kelas') === 'Otomotif') ? 'selected' : ''; ?>>Otomotif Sepeda Motor</option>
+                            <option value="Aplikasi Perkantoran" <?= (old('kelas') === 'Aplikasi Perkantoran') ? 'selected' : ''; ?>>Aplikasi Perkantoran</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- Nilai 4 Mapel Akademik -->
-                <div class="grid grid-cols-2 gap-3 pt-1">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Tauhid</label>
-                        <input type="number" step="0.1" min="0" max="100" name="tauhid" required 
-                               class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition" 
-                               placeholder="0 - 100">
+                <!-- Input Nilai Kejuruan Dinamis Sesuai Jurusan Terpilih -->
+                <div id="sectionNilaiKejuruan" class="p-4 bg-sky-50/70 border border-sky-200 rounded-xl space-y-3 hidden">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-xs font-bold text-sky-950 flex items-center gap-1.5">
+                                <i class="fa-solid fa-laptop-code text-brand"></i> Nilai Kejuruan: <span id="labelJurusanTerpilih" class="font-extrabold text-brand">-</span>
+                            </h4>
+                            <p class="text-3xs text-sky-800/80 mt-0.5">Input nilai awal kompetensi kejuruan untuk jurusan yang dipilih (opsional, biarkan kosong untuk santri baru).</p>
+                        </div>
+                        <span class="text-3xs px-2.5 py-0.5 rounded-full bg-sky-200/70 text-sky-800 font-bold shrink-0">Opsional</span>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Fiqih</label>
-                        <input type="number" step="0.1" min="0" max="100" name="fiqih" required 
-                               class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition" 
-                               placeholder="0 - 100">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai B. Inggris</label>
-                        <input type="number" step="0.1" min="0" max="100" name="b_ing" required 
-                               class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition" 
-                               placeholder="0 - 100">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Menulis Kreatif</label>
-                        <input type="number" step="0.1" min="0" max="100" name="menulis_kreatif" required 
-                               class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition" 
-                               placeholder="0 - 100">
+
+                    <div id="containerMapelKejuruan" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <!-- Diisi secara dinamis melalui JavaScript sesuai jurusan yang dipilih -->
                     </div>
                 </div>
 
-                <!-- Adab & Kehadiran Highlight Box -->
+                <!-- Nilai 4 Mapel Akademik (Opsional untuk Santri Baru) -->
+                <div class="space-y-3 pt-1">
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-book-open text-brand"></i> Nilai Akademik &amp; Karakter (Opsional)
+                            </h4>
+                            <p class="text-3xs text-slate-500 mt-0.5">Nilai awal dapat dikosongkan untuk santri baru yang baru mendaftar.</p>
+                        </div>
+                        <span class="text-3xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold shrink-0">Boleh Kosong</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Tauhid</label>
+                            <input type="number" step="0.1" min="0" max="100" name="tauhid" value="<?= esc(old('tauhid')); ?>" 
+                                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition" 
+                                   placeholder="Kosong (opsional)">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Fiqih</label>
+                            <input type="number" step="0.1" min="0" max="100" name="fiqih" value="<?= esc(old('fiqih')); ?>" 
+                                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition" 
+                                   placeholder="Kosong (opsional)">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai B. Inggris</label>
+                            <input type="number" step="0.1" min="0" max="100" name="b_ing" value="<?= esc(old('b_ing')); ?>" 
+                                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition" 
+                                   placeholder="Kosong (opsional)">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Menulis Kreatif</label>
+                            <input type="number" step="0.1" min="0" max="100" name="menulis_kreatif" value="<?= esc(old('menulis_kreatif')); ?>" 
+                                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition" 
+                                   placeholder="Kosong (opsional)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adab & Kehadiran Highlight Box (Opsional) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50/80 rounded-xl border border-slate-200">
                     <div>
                         <label class="block text-xs font-bold text-amber-800 mb-1">
-                            <i class="fa-solid fa-scale-balanced mr-1"></i> Nilai Adab & Akhlaq (20%)
+                            <i class="fa-solid fa-scale-balanced mr-1"></i> Nilai Adab &amp; Akhlaq (20%)
                         </label>
-                        <input type="number" step="0.1" name="adab_akhlaq" value="85" min="0" max="100" required 
+                        <input type="number" step="0.1" name="adab_akhlaq" value="<?= esc(old('adab_akhlaq')); ?>" min="0" max="100" 
                                class="w-full px-3 py-2 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold bg-white text-amber-900" 
-                               placeholder="Contoh: 85">
+                               placeholder="Opsional (standar: 85)">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-emerald-800 mb-1">
                             <i class="fa-solid fa-clipboard-check mr-1"></i> Kehadiran Awal (%)
                         </label>
-                        <input type="number" step="0.1" name="kehadiran" value="95" min="0" max="100" required 
+                        <input type="number" step="0.1" name="kehadiran" value="<?= esc(old('kehadiran')); ?>" min="0" max="100" 
                                class="w-full px-3 py-2 border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold bg-white text-emerald-900" 
-                               placeholder="Contoh: 95">
+                               placeholder="Opsional (standar: 95)">
                     </div>
                 </div>
 
@@ -211,7 +240,7 @@
                         Batal
                     </a>
                     <button type="submit" 
-                            class="px-5 py-2.5 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold shadow-md shadow-brand/20 transition flex items-center gap-2">
+                            class="px-5 py-2.5 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold shadow-md shadow-brand/20 transition flex items-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-floppy-disk"></i> Simpan Data Santri
                     </button>
                 </div>
@@ -221,7 +250,66 @@
     </main>
 </div>
 
+<?php
+$mapelsByJurusan = [];
+if (!empty($mapels)) {
+    foreach ($mapels as $mp) {
+        $j = $mp['jurusan'];
+        if (!isset($mapelsByJurusan[$j])) {
+            $mapelsByJurusan[$j] = [];
+        }
+        $mapelsByJurusan[$j][] = $mp;
+    }
+}
+?>
+
 <script>
+const mapelsData = <?= json_encode($mapelsByJurusan); ?>;
+
+function renderKejuruanMapels(jurusan) {
+    const section = document.getElementById('sectionNilaiKejuruan');
+    const label = document.getElementById('labelJurusanTerpilih');
+    const container = document.getElementById('containerMapelKejuruan');
+
+    if (!jurusan || !mapelsData[jurusan] || mapelsData[jurusan].length === 0) {
+        section.classList.add('hidden');
+        container.innerHTML = '';
+        return;
+    }
+
+    label.textContent = jurusan;
+    container.innerHTML = '';
+
+    mapelsData[jurusan].forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'bg-white p-3 rounded-xl border border-sky-200 shadow-xs space-y-1.5';
+        div.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-800 truncate" title="${m.nama_mapel}">${m.nama_mapel}</span>
+                <span class="text-3xs px-1.5 py-0.5 bg-slate-100 rounded text-slate-600 font-mono font-bold shrink-0">${m.kode_mapel}</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <input type="number" step="0.1" min="0" max="100" 
+                       name="nilai_kejuruan_mapel[${m.id}]" 
+                       placeholder="Nilai (0 - 100) - Opsional" 
+                       class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand font-medium">
+            </div>
+            <div class="text-3xs text-slate-400 font-medium">Standar KKM: ${m.kkm || 75}</div>
+        `;
+        container.appendChild(div);
+    });
+
+    section.classList.remove('hidden');
+}
+
+// Inisialisasi jika opsi jurusan sudah terpilih sebelumnya
+document.addEventListener('DOMContentLoaded', function() {
+    const sel = document.getElementById('selectKelas');
+    if (sel && sel.value) {
+        renderKejuruanMapels(sel.value);
+    }
+});
+
 function previewSantriFoto(input) {
     var previewImg = document.getElementById('fotoPreviewImg');
     var defaultIcon = document.getElementById('fotoDefaultIcon');

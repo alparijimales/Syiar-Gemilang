@@ -1,0 +1,104 @@
+<section class="py-[72px] md:py-[104px] bg-gradient-to-br from-blue via-[#052C4D] to-blue text-white relative overflow-hidden" id="ppdb">
+      <!-- Blueprint Grid Canvas / Dot Pattern Background -->
+      <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#FFD23F_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"></div>
+
+      <div class="max-w-[1180px] mx-auto px-6 relative z-10">
+        
+        <!-- Header Banner -->
+        <div class="reveal flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12 pb-6 border-b border-white/15">
+          <div class="max-w-[68ch]">
+            <div class="inline-flex items-center gap-2 py-1 px-3.5 rounded text-pencil border border-pencil/40 text-[12px] font-bold tracking-wider uppercase mb-3 shadow-xs">
+              
+              Penerimaan Peserta Didik Baru (PPDB) • Angkatan 36
+            </div>
+            <h2 class="font-disp font-extrabold text-[clamp(32px,4.5vw,56px)] leading-[1.08] tracking-tight text-white">
+              Wujudkan Masa Depan Mandiri dengan <span class="text-pencil underline decoration-pencil/50 underline-offset-8">Beasiswa 100%</span> Diklat Berasrama
+            </h2>
+            <p class="m-0 mt-3 text-white/80 text-[16px] leading-relaxed">
+              Pendidikan vokasi intensif 6 bulan siap kerja untuk pemuda dhuafa &amp; yatim usia 17–30 tahun. Gratis biaya pelatihan, asrama tempat tinggal, konsumsi 3x sehari, hingga sertifikasi kompetensi profesi BNSP.
+            </p>
+          </div>
+
+          <!-- Quick Stat Badge -->
+          <div class="flex items-center gap-3 bg-white/10 p-3 rounded-2xl border border-white/15 backdrop-blur-xs shrink-0 self-start lg:self-auto">
+            <div class="w-12 h-12 rounded-xl bg-pencil text-deep flex items-center justify-center text-xl font-bold">
+              <svg class="w-6 h-6 fill-none stroke-current stroke-[2]"><use href="#cap"/></svg>
+            </div>
+            <div>
+              <span class="text-3xs text-white/70 uppercase font-semibold block">Status Gelombang I</span>
+              <strong class="text-pencil font-disp text-base font-bold block">Pendaftaran Terbuka</strong>
+              <span class="text-3xs text-white/80">Kuota 120 Santri Nasional</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Bento Cards Keunggulan PPDB -->
+        <div class="reveal grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+          
+          <div class="bg-white/10 backdrop-blur-xs p-6 rounded-2xl border border-white/15 hover:bg-white/15 transition-all">
+            <span class="w-10 h-10 rounded-xl bg-pencil text-deep grid place-items-center font-bold text-lg mb-3">
+              <svg class="w-5 h-5 fill-none stroke-current stroke-[2]"><use href="#clip"/></svg>
+            </span>
+            <h3 class="font-disp font-bold text-lg text-white mb-1.5">Beasiswa 100% Penuh</h3>
+            <p class="text-xs text-white/80 m-0 leading-relaxed">Seluruh biaya pelatihan, modul belajar, asrama, dan konsumsi harian santri gratis dibiayai dana ZISWAF.</p>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-xs p-6 rounded-2xl border border-white/15 hover:bg-white/15 transition-all">
+            <span class="w-10 h-10 rounded-xl bg-blue text-white grid place-items-center font-bold text-lg mb-3">
+              <svg class="w-5 h-5 fill-none stroke-current stroke-[2]"><use href="#chart"/></svg>
+            </span>
+            <h3 class="font-disp font-bold text-lg text-white mb-1.5">8 Program Kejuruan</h3>
+            <p class="text-xs text-white/80 m-0 leading-relaxed">Pilihan keahlian praktis: TKJ, Tata Busana, Fotografi &amp; Video, Desain Grafis, Otomotif, AP, Kuliner, dan RPL.</p>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-xs p-6 rounded-2xl border border-white/15 hover:bg-white/15 transition-all">
+            <span class="w-10 h-10 rounded-xl bg-emerald-500 text-white grid place-items-center font-bold text-lg mb-3">
+              <svg class="w-5 h-5 fill-none stroke-current stroke-[2]"><use href="#users"/></svg>
+            </span>
+            <h3 class="font-disp font-bold text-lg text-white mb-1.5">Sertifikasi BNSP &amp; Adab</h3>
+            <p class="text-xs text-white/80 m-0 leading-relaxed">Diakui industri secara nasional dan dibina karakter aqidah, tahsin Al-Qur'an, serta kedisiplinan santri.</p>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-xs p-6 rounded-2xl border border-white/15 hover:bg-white/15 transition-all">
+            <span class="w-10 h-10 rounded-xl bg-pencil text-deep grid place-items-center font-bold text-lg mb-3">
+              <svg class="w-5 h-5 fill-none stroke-current stroke-[2]"><use href="#cal"/></svg>
+            </span>
+            <h3 class="font-disp font-bold text-lg text-white mb-1.5">Penyaluran Magang Kerja</h3>
+            <p class="text-xs text-white/80 m-0 leading-relaxed">Jejaring mitra perusahaan, studio industri, bengkel, dan inkubasi wirausaha mandiri bagi lulusan.</p>
+          </div>
+
+        </div>
+
+        <!-- Big Highlight Action Bar with Pulsing "Daftar Sekarang" Button -->
+        <div class="reveal bg-gradient-to-r from-blue/90 via-[#006BB5] to-blue p-6 sm:p-9 rounded-3xl border border-white/20 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="space-y-1.5 text-center md:text-left">
+            <span class="text-pencil font-bold text-xs uppercase tracking-wider block">Pendaftaran Online Dibuka Sekarang</span>
+            <h3 class="font-disp font-extrabold text-2xl sm:text-3xl text-white">Jangan Lewatkan Kesempatan Emas Ini!</h3>
+            <p class="text-xs sm:text-sm text-white/90 max-w-[50ch]">
+              Proses pendaftaran mudah dan cepat melalui formulir online. Dapatkan nomor registrasi resmi Anda dalam hitungan menit.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-center gap-3 shrink-0">
+            <!-- Tombol Daftar Sekarang Super Menarik -->
+            <a href="<?= base_url('ppdb#form-daftar'); ?>" class="group relative inline-flex items-center gap-3 py-4 px-8 rounded-2xl bg-pencil hover:bg-[#FFE066] text-deep font-disp font-extrabold text-base sm:text-lg shadow-2xl transition-all duration-200 transform hover:-translate-y-1 hover:shadow-pencil/30 overflow-hidden animate-pulseGlow">
+              <!-- Shimmer Effect -->
+              <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/50 to-transparent group-hover:animate-shimmer pointer-events-none"></div>
+              
+              <span class="w-8 h-8 rounded-xl bg-deep text-pencil grid place-items-center text-sm shadow-xs transition-transform group-hover:rotate-12">
+                <svg class="w-4 h-4 fill-none stroke-current stroke-[2.2]"><use href="#cap"/></svg>
+              </span>
+              <span>Daftar Sekarang (Isi Formulir)</span>
+              <svg class="w-5 h-5 fill-none stroke-current stroke-[2.5] transition-transform group-hover:translate-x-1"><use href="#arr"/></svg>
+            </a>
+
+            <!-- Tombol Cek Status / Informasi -->
+            <a href="<?= base_url('ppdb'); ?>" class="inline-flex items-center gap-2 py-4 px-6 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-semibold text-sm border border-white/25 transition">
+              <span>Alur &amp; Syarat Lengkap</span>
+              <svg class="w-4 h-4 fill-none stroke-current stroke-2"><use href="#arr"/></svg>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>

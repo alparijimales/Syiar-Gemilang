@@ -142,22 +142,23 @@
                             <td class="py-2.5 px-3 text-center border-r border-slate-200 font-medium text-slate-500"><?= $idx + 1; ?></td>
                             <td class="py-2.5 px-3 border-r border-slate-200 font-bold text-slate-800 nama-col"><?= esc($s['nama']); ?></td>
                             <td class="py-2.5 px-3 border-r border-slate-200 kelas-col">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-3xs font-semibold border <?= $bdg; ?>">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-semibold border <?= $bdg; ?> shadow-2xs">
+                                    <i class="fa-solid fa-graduation-cap text-[10px]"></i>
                                     <?= esc($s['kelas']); ?>
                                 </span>
                             </td>
                             <td class="py-2.5 px-3 text-center border-r border-slate-200">
-                                <span class="px-2 py-0.5 rounded-full font-bold text-2xs <?= ($s['kehadiran'] ?? 95) >= 90 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' ?>">
+                                <span class="font-bold text-slate-800 text-xs font-mono">
                                     <?= esc($s['kehadiran'] ?? 95); ?>%
                                 </span>
                             </td>
                             <td class="py-2.5 px-3 border-r border-slate-200">
                                 <?php if ($lastLog): ?>
                                     <div class="flex items-center gap-1.5">
-                                        <span class="px-2 py-0.5 rounded text-3xs font-bold 
-                                            <?= $lastLog['status'] === 'Hadir' ? 'bg-emerald-100 text-emerald-800' : 
-                                               ($lastLog['status'] === 'Telat' ? 'bg-amber-100 text-amber-800' : 
-                                               ($lastLog['status'] === 'Sakit' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800')); ?>">
+                                        <span class="px-2 py-0.5 rounded text-2xs font-semibold border 
+                                            <?= $lastLog['status'] === 'Hadir' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 
+                                               ($lastLog['status'] === 'Telat' ? 'bg-amber-50 text-amber-800 border-amber-300' : 
+                                               ($lastLog['status'] === 'Sakit' ? 'bg-blue-50 text-blue-800 border-blue-300' : 'bg-red-50 text-red-800 border-red-300')); ?>">
                                             <?= esc($lastLog['status']); ?>
                                         </span>
                                         <span class="text-3xs text-slate-500 truncate" title="<?= esc($lastLog['nama_sesi']); ?>">
@@ -169,22 +170,22 @@
                                 <?php endif; ?>
                             </td>
                             <td class="py-2.5 px-3 text-center">
-                                <div class="flex items-center justify-center gap-1">
+                                <div class="inline-flex items-center p-0.5 rounded-lg bg-slate-100/90 border border-slate-200/90 shadow-2xs divide-x divide-slate-200">
                                     <button type="button" onclick="openModalPresensi(<?= $s['id']; ?>, '<?= esc($s['nama'], 'js'); ?>', 'Hadir')"
-                                            class="px-2 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-3xs transition">
-                                        Hadir
+                                            class="px-2 py-1 text-2xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-white rounded transition-all flex items-center gap-1 cursor-pointer">
+                                        <i class="fa-solid fa-check text-emerald-600 text-[10px]"></i> Hadir
                                     </button>
                                     <button type="button" onclick="openModalPresensi(<?= $s['id']; ?>, '<?= esc($s['nama'], 'js'); ?>', 'Telat')"
-                                            class="px-2 py-1 rounded bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold text-3xs transition">
-                                        Telat
+                                            class="px-2 py-1 text-2xs font-bold text-slate-700 hover:text-amber-700 hover:bg-white rounded transition-all flex items-center gap-1 cursor-pointer">
+                                        <i class="fa-solid fa-clock text-amber-500 text-[10px]"></i> Telat
                                     </button>
                                     <button type="button" onclick="openModalPresensi(<?= $s['id']; ?>, '<?= esc($s['nama'], 'js'); ?>', 'Sakit')"
-                                            class="px-2 py-1 rounded bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold text-3xs transition">
-                                        Sakit
+                                            class="px-2 py-1 text-2xs font-bold text-slate-700 hover:text-sky-700 hover:bg-white rounded transition-all flex items-center gap-1 cursor-pointer">
+                                        <i class="fa-solid fa-stethoscope text-sky-500 text-[10px]"></i> Sakit
                                     </button>
                                     <button type="button" onclick="openModalPresensi(<?= $s['id']; ?>, '<?= esc($s['nama'], 'js'); ?>', 'Absen')"
-                                            class="px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-800 font-bold text-3xs transition">
-                                        Absen
+                                            class="px-2 py-1 text-2xs font-bold text-slate-700 hover:text-rose-700 hover:bg-white rounded transition-all flex items-center gap-1 cursor-pointer">
+                                        <i class="fa-solid fa-xmark text-rose-500 text-[10px]"></i> Absen
                                     </button>
                                 </div>
                             </td>

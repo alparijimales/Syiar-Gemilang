@@ -84,21 +84,22 @@
                                class="w-full pl-9 pr-8 py-2 text-xs border border-slate-300 rounded-xl bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition">
                     </div>
 
-                    <!-- Filter Role Dropdown -->
-                    <div class="flex items-center gap-2.5 shrink-0">
+                    <!-- Filter Role Dropdown & Add User Button -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
                         <select id="userFilterRole" onchange="filterUserTable()" 
-                                class="px-3 py-2 text-xs border border-slate-300 rounded-xl bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition">
+                                class="w-full sm:w-auto px-3 py-2 text-xs border border-slate-300 rounded-xl bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition">
                             <option value="">Semua Role</option>
                             <option value="admin">Administrator</option>
                             <option value="instruktur">Instruktur</option>
+                            <option value="pendamping_agama">Pendamping Agama</option>
                             <option value="siswa">Siswa / Santri</option>
                             <option value="wali_santri">Wali Santri</option>
                         </select>
 
                         <!-- Add User Button -->
                         <a href="<?= base_url('admin/users/add'); ?>" 
-                           class="bg-brand hover:bg-brand-dark text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm shadow-brand/20 flex items-center gap-2 transition shrink-0 cursor-pointer">
-                            <i class="fa-solid fa-user-plus"></i> Tambah User Baru
+                           class="w-full sm:w-auto justify-center bg-brand hover:bg-brand-dark text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm shadow-brand/20 flex items-center gap-2 transition cursor-pointer">
+                            <i class="fa-solid fa-user-plus"></i> <span>Tambah User Baru</span>
                         </a>
                     </div>
                 </div>
@@ -122,24 +123,27 @@
                             <?php
                                 $isSelf = ((int)$u['id'] === (int)session()->get('user_id'));
                                 $roleBadge = [
-                                    'admin'       => 'bg-blue-50 text-[#0066CC] border-blue-200',
-                                    'instruktur'  => 'bg-purple-50 text-purple-700 border-purple-200',
-                                    'siswa'       => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                    'wali_santri' => 'bg-amber-50 text-amber-800 border-amber-200',
+                                    'admin'            => 'bg-blue-50 text-[#0066CC] border-blue-200',
+                                    'instruktur'       => 'bg-purple-50 text-purple-700 border-purple-200',
+                                    'pendamping_agama' => 'bg-teal-50 text-teal-800 border-teal-200',
+                                    'siswa'            => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                    'wali_santri'      => 'bg-amber-50 text-amber-800 border-amber-200',
                                 ][$u['role']] ?? 'bg-slate-50 text-slate-700 border-slate-200';
 
                                 $roleLabel = [
-                                    'admin'       => 'Administrator',
-                                    'instruktur'  => 'Instruktur',
-                                    'siswa'       => 'Siswa / Santri',
-                                    'wali_santri' => 'Wali Santri',
+                                    'admin'            => 'Administrator',
+                                    'instruktur'       => 'Instruktur',
+                                    'pendamping_agama' => 'Pendamping Agama',
+                                    'siswa'            => 'Siswa / Santri',
+                                    'wali_santri'      => 'Wali Santri',
                                 ][$u['role']] ?? ucfirst($u['role']);
 
                                 $roleIcon = [
-                                    'admin'       => 'fa-solid fa-user-shield',
-                                    'instruktur'  => 'fa-solid fa-chalkboard-user',
-                                    'siswa'       => 'fa-solid fa-user-graduate',
-                                    'wali_santri' => 'fa-solid fa-hands-holding-child',
+                                    'admin'            => 'fa-solid fa-user-shield',
+                                    'instruktur'       => 'fa-solid fa-chalkboard-user',
+                                    'pendamping_agama' => 'fa-solid fa-book-quran',
+                                    'siswa'            => 'fa-solid fa-user-graduate',
+                                    'wali_santri'      => 'fa-solid fa-hands-holding-child',
                                 ][$u['role']] ?? 'fa-solid fa-user';
                             ?>
                             <tr class="user-row <?= $index % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'; ?> hover:bg-brand-light/30 transition">
@@ -186,17 +190,25 @@
 
                                 <td class="py-3 px-3 border-r border-slate-200 text-center">
                                     <?php if (!empty($u['is_active'])): ?>
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-3xs font-bold bg-white text-emerald-700 border border-slate-200 shadow-2xs">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
                                         </span>
                                     <?php else: ?>
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-bold bg-slate-100 text-slate-600 border border-slate-300">
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-3xs font-semibold bg-white text-slate-500 border border-slate-200 shadow-2xs">
                                             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Nonaktif
                                         </span>
                                     <?php endif; ?>
                                 </td>
 
                                 <td class="py-3 px-3 text-center whitespace-nowrap">
+                                    <!-- Edit User Button -->
+                                    <button type="button"
+                                            onclick='openEditUserModal(<?= htmlspecialchars(json_encode($u), ENT_QUOTES, "UTF-8"); ?>)'
+                                            title="Edit Data & Hak Akses Pengguna"
+                                            class="p-1.5 rounded-lg border border-sky-200 text-brand hover:bg-sky-50 text-xs font-semibold mr-1 transition cursor-pointer">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+
                                     <!-- Toggle Status Button -->
                                     <?php if (!$isSelf): ?>
                                         <form action="<?= base_url('admin/users/toggle/' . urlencode($u['id'])); ?>" method="post" class="inline">
@@ -254,6 +266,144 @@ function filterUserTable() {
         }
     });
 }
+
+function openEditUserModal(user) {
+    document.getElementById('edit_user_id').value = user.id || '';
+    document.getElementById('edit_nama').value = user.nama || '';
+    document.getElementById('edit_username').value = user.username || '';
+    document.getElementById('edit_password').value = '';
+    document.getElementById('edit_role').value = user.role || 'siswa';
+    document.getElementById('edit_is_active').value = user.is_active !== undefined ? user.is_active : '1';
+    
+    const santriSelect = document.getElementById('edit_santri_id');
+    if (santriSelect) {
+        santriSelect.value = user.santri_id || '';
+    }
+
+    handleEditRoleChange(user.role);
+    document.getElementById('modalEditUser').classList.remove('hidden');
+}
+
+function closeEditUserModal() {
+    document.getElementById('modalEditUser').classList.add('hidden');
+}
+
+function handleEditRoleChange(role) {
+    const santriWrap = document.getElementById('editSantriWrapper');
+    if (role === 'siswa' || role === 'wali_santri') {
+        santriWrap.classList.remove('hidden');
+    } else {
+        santriWrap.classList.add('hidden');
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeEditUserModal();
+    }
+});
 </script>
+
+<!-- ===================== MODAL EDIT PENGGUNA (USER LOGIN) ===================== -->
+<div id="modalEditUser" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div onclick="closeEditUserModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
+    <div class="relative bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 z-10 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <!-- Header -->
+        <div class="flex items-start justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center text-lg shrink-0">
+                    <i class="fa-solid fa-user-pen"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Edit Data Pengguna</h3>
+                    <p class="text-xs text-slate-500">Perbarui profil akun, otoritas role, dan kata sandi login</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeEditUserModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer p-1">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <form action="<?= base_url('admin/users/update'); ?>" method="POST" class="space-y-3.5">
+            <?= csrf_field(); ?>
+            <input type="hidden" name="id" id="edit_user_id">
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap Pengguna <span class="text-rose-500">*</span></label>
+                <input type="text" name="nama" id="edit_nama" required 
+                       class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand font-medium text-slate-800">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Username Login <span class="text-rose-500">*</span></label>
+                    <input type="text" name="username" id="edit_username" required 
+                           class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand font-mono font-medium text-slate-800">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Role / Peran Akses <span class="text-rose-500">*</span></label>
+                    <select name="role" id="edit_role" onchange="handleEditRoleChange(this.value)" required 
+                            class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand font-medium text-slate-800 bg-white">
+                        <option value="admin">Administrator (Admin)</option>
+                        <option value="instruktur">Instruktur Kejuruan</option>
+                        <option value="pendamping_agama">Pendamping Agama</option>
+                        <option value="siswa">Siswa / Santri</option>
+                        <option value="wali_santri">Wali Santri</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tautan Santri (Muncul jika role Siswa / Wali) -->
+            <div id="editSantriWrapper" class="hidden">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                    Tautkan ke Data Santri:
+                </label>
+                <select name="santri_id" id="edit_santri_id" 
+                        class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand font-medium text-slate-800 bg-white">
+                    <option value="">-- Tidak Ditautkan --</option>
+                    <?php if (!empty($santri_list)): ?>
+                        <?php foreach ($santri_list as $sl): ?>
+                            <option value="<?= esc($sl['id']); ?>">
+                                <?= esc($sl['nama']); ?> (NIS: <?= esc($sl['nis'] ?? '-'); ?> - <?= esc($sl['kelas']); ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
+                <span class="text-3xs text-slate-400 mt-0.5 block">Diperlukan agar akun dapat mengakses data rapor dan nilai santri terkait.</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Kata Sandi Baru</label>
+                    <input type="password" name="password" id="edit_password" placeholder="Kosongkan jika tidak diubah" 
+                           class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand font-medium text-slate-800">
+                    <span class="text-3xs text-slate-400 mt-0.5 block">Minimal 6 karakter jika ingin ganti password.</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Status Akun</label>
+                    <select name="is_active" id="edit_is_active" 
+                            class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand font-medium text-slate-800 bg-white">
+                        <option value="1">Aktif (Dapat Login)</option>
+                        <option value="0">Nonaktif (Diblokir)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Footer Action -->
+            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <button type="button" onclick="closeEditUserModal()" 
+                        class="px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 hover:bg-slate-100 border border-slate-200 transition cursor-pointer">
+                    Batal
+                </button>
+                <button type="submit" 
+                        class="px-5 py-2 text-xs font-bold rounded-xl text-white bg-brand hover:bg-brand-dark shadow-md shadow-brand/20 transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 </body>
 </html>

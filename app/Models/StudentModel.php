@@ -8,23 +8,197 @@ class StudentModel extends Model
 {
     protected $primaryKey    = 'id';
     protected $table         = 'nilai_santri'; // Nama tabel di database
-    protected $allowedFields = ['nama', 'nis', 'cabang', 'kelas', 'angkatan', 'status', 'foto', 'tauhid', 'fiqih', 'b_ing', 'menulis_kreatif', 'adab_akhlaq', 'kehadiran']; // Kolom yang diizinkan untuk diisi
+    protected $allowedFields = ['nama', 'nis', 'cabang', 'kelas', 'angkatan', 'status', 'foto', 'tauhid', 'fiqih', 'b_ing', 'menulis_kreatif', 'nilai_kejuruan', 'adab_akhlaq', 'kehadiran']; // Kolom yang diizinkan untuk diisi
 
-    // Kolom perhitungan nilai dengan pembobotan 80% Akademik + 20% Adab & Akhlaq
-    private string $selectFormula = 'id, nama, nis, cabang, kelas, angkatan, status, foto, tauhid, b_ing, menulis_kreatif, fiqih, adab_akhlaq, kehadiran,
+    // Kolom perhitungan nilai dengan pembobotan 80% Akademik (5 Mapel termasuk Kejuruan) + 20% Adab & Akhlaq
+    private string $selectFormula = 'nilai_santri.id, nilai_santri.nama, nilai_santri.nis, nilai_santri.cabang, nilai_santri.kelas, nilai_santri.angkatan, nilai_santri.status, nilai_santri.foto, nilai_santri.tauhid, nilai_santri.b_ing, nilai_santri.menulis_kreatif, nilai_santri.fiqih, nilai_santri.nilai_kejuruan, nilai_santri.adab_akhlaq, nilai_santri.kehadiran,
         (SELECT COUNT(*) FROM presensi_log WHERE presensi_log.santri_id = nilai_santri.id AND presensi_log.status = "Absen") as total_absen,
-        ROUND((tauhid + b_ing + menulis_kreatif + fiqih) / 4, 2) as rata_akademik,
-        ROUND((((tauhid + b_ing + menulis_kreatif + fiqih) / 4 * 0.8) + (adab_akhlaq * 0.2)), 2) as rata_rata';
+        COALESCE((SELECT ROUND(AVG(nk.nilai_akhir), 2) FROM nilai_kompetensi nk WHERE nk.santri_id = nilai_santri.id), nilai_santri.nilai_kejuruan, 0) as akumulasi_kejuruan,
+        ROUND((nilai_santri.tauhid + nilai_santri.b_ing + nilai_santri.menulis_kreatif + nilai_santri.fiqih + COALESCE((SELECT AVG(nk.nilai_akhir) FROM nilai_kompetensi nk WHERE nk.santri_id = nilai_santri.id), nilai_santri.nilai_kejuruan, 0)) / 5, 2) as rata_akademik,
+        ROUND((((nilai_santri.tauhid + nilai_santri.b_ing + nilai_santri.menulis_kreatif + nilai_santri.fiqih + COALESCE((SELECT AVG(nk.nilai_akhir) FROM nilai_kompetensi nk WHERE nk.santri_id = nilai_santri.id), nilai_santri.nilai_kejuruan, 0)) / 5 * 0.8) + (nilai_santri.adab_akhlaq * 0.2)), 2) as rata_rata';
+
+    /**
+     * Menghubungkan setiap santri dengan detail 2 mata pelajaran kejuruan spesifik
+     * serta memastikan nilai akumulasi kejuruan dan rata-rata terhitung dengan bobot 5 mapel.
+     */
+    public function enrichStudentsWithKejuruan(array $students): array
+    {
+        if (empty($students)) {
+            return [];
+        }
+
+        $ids = array_filter(array_column($students, 'id'));
+        $kejuruanMap = [];
+
+        if (!empty($ids)) {
+            $db = \Config\Database::connect();
+            $rows = $db->table('nilai_kompetensi nk')
+                ->select('nk.santri_id, nk.mapel_id, nk.nilai_tugas, nk.nilai_teori, nk.nilai_praktik, nk.nilai_akhir,
+                          m.kode_mapel, m.nama_mapel, m.jurusan')
+                ->join('mapel_kompetensi m', 'm.id = nk.mapel_id', 'inner')
+                ->whereIn('nk.santri_id', $ids)
+                ->orderBy('m.id', 'ASC')
+                ->get()
+                ->getResultArray();
+
+            foreach ($rows as $r) {
+                $sId = (int)$r['santri_id'];
+                if (!isset($kejuruanMap[$sId])) {
+                    $kejuruanMap[$sId] = [];
+                }
+                $r['alias'] = $this->getMapelShortAlias($r['kode_mapel'] ?? '', $r['nama_mapel'] ?? '');
+                $kejuruanMap[$sId][] = $r;
+            }
+        }
+
+        // Ambil template mapel per jurusan untuk santri yang belum ada entri di nilai_kompetensi
+        $db = \Config\Database::connect();
+        $templateMapel = $db->table('mapel_kompetensi')
+            ->select('id, kode_mapel, nama_mapel, jurusan')
+            ->orderBy('id', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $jurusanMapelTemplate = [];
+        foreach ($templateMapel as $tm) {
+            $j = $tm['jurusan'];
+            if (!isset($jurusanMapelTemplate[$j])) {
+                $jurusanMapelTemplate[$j] = [];
+            }
+            $tm['alias'] = $this->getMapelShortAlias($tm['kode_mapel'], $tm['nama_mapel']);
+            $jurusanMapelTemplate[$j][] = $tm;
+        }
+
+        foreach ($students as &$s) {
+            $sId = (int)($s['id'] ?? 0);
+            $jurusan = $s['kelas'] ?? '';
+            $existingMapels = $kejuruanMap[$sId] ?? [];
+            $existingByMapelId = [];
+            foreach ($existingMapels as $em) {
+                $existingByMapelId[(int)$em['mapel_id']] = $em;
+            }
+
+            // Ambil seluruh mata diklat yang terdaftar untuk jurusan santri
+            $tmpl = $jurusanMapelTemplate[$jurusan] ?? [];
+            $subMapels = [];
+            if (!empty($tmpl)) {
+                foreach ($tmpl as $tItem) {
+                    $mId = (int)$tItem['id'];
+                    if (isset($existingByMapelId[$mId])) {
+                        $subMapels[] = $existingByMapelId[$mId];
+                    } else {
+                        $subMapels[] = [
+                            'santri_id'     => $sId,
+                            'mapel_id'      => $mId,
+                            'nilai_tugas'   => 0.0,
+                            'nilai_teori'   => 0.0,
+                            'nilai_praktik' => 0.0,
+                            'nilai_akhir'   => 0.0,
+                            'kode_mapel'    => $tItem['kode_mapel'],
+                            'nama_mapel'    => $tItem['nama_mapel'],
+                            'jurusan'       => $tItem['jurusan'],
+                            'alias'         => $tItem['alias'],
+                        ];
+                    }
+                }
+            } else {
+                $subMapels = $existingMapels;
+            }
+
+            $s['mapel_kejuruan'] = $subMapels;
+
+            $mapel1 = $subMapels[0] ?? null;
+            $mapel2 = $subMapels[1] ?? null;
+
+            $s['kejuruan_1_id']     = $mapel1['mapel_id'] ?? null;
+            $s['kejuruan_1_kode']   = $mapel1['kode_mapel'] ?? '';
+            $s['kejuruan_1_nama']   = $mapel1['nama_mapel'] ?? 'Mata Diklat Kejuruan 1';
+            $s['kejuruan_1_alias']  = $mapel1['alias'] ?? 'Kejuruan 1';
+            $s['kejuruan_1_nilai']  = isset($mapel1['nilai_akhir']) ? (float)$mapel1['nilai_akhir'] : 0.0;
+            $s['kejuruan_1_tugas']  = isset($mapel1['nilai_tugas']) ? (float)$mapel1['nilai_tugas'] : 0.0;
+            $s['kejuruan_1_teori']  = isset($mapel1['nilai_teori']) ? (float)$mapel1['nilai_teori'] : 0.0;
+            $s['kejuruan_1_praktik']= isset($mapel1['nilai_praktik']) ? (float)$mapel1['nilai_praktik'] : 0.0;
+
+            $s['kejuruan_2_id']     = $mapel2['mapel_id'] ?? null;
+            $s['kejuruan_2_kode']   = $mapel2['kode_mapel'] ?? '';
+            $s['kejuruan_2_nama']   = $mapel2['nama_mapel'] ?? 'Mata Diklat Kejuruan 2';
+            $s['kejuruan_2_alias']  = $mapel2['alias'] ?? 'Kejuruan 2';
+            $s['kejuruan_2_nilai']  = isset($mapel2['nilai_akhir']) ? (float)$mapel2['nilai_akhir'] : 0.0;
+            $s['kejuruan_2_tugas']  = isset($mapel2['nilai_tugas']) ? (float)$mapel2['nilai_tugas'] : 0.0;
+            $s['kejuruan_2_teori']  = isset($mapel2['nilai_teori']) ? (float)$mapel2['nilai_teori'] : 0.0;
+            $s['kejuruan_2_praktik']= isset($mapel2['nilai_praktik']) ? (float)$mapel2['nilai_praktik'] : 0.0;
+
+            // Nilai Akumulasi Kejuruan (Rata-rata seluruh mata diklat kejuruan jurusan terkait)
+            if (!empty($subMapels)) {
+                $totK = 0;
+                foreach ($subMapels as $sm) {
+                    $totK += (float)($sm['nilai_akhir'] ?? 0);
+                }
+                $s['nilai_kejuruan'] = round($totK / count($subMapels), 2);
+            } else {
+                $s['nilai_kejuruan'] = (float)($s['nilai_kejuruan'] ?? 0.0);
+            }
+
+            // Hitung rata_akademik (5 mapel/mata diklat) & rata_rata (80% akademik + 20% adab)
+            $thd = (float)($s['tauhid'] ?? 0);
+            $fqh = (float)($s['fiqih'] ?? 0);
+            $ing = (float)($s['b_ing'] ?? 0);
+            $krt = (float)($s['menulis_kreatif'] ?? 0);
+            $kjr = (float)($s['nilai_kejuruan'] ?? 0);
+            $adb = (float)($s['adab_akhlaq'] ?? 85);
+
+            $s['rata_akademik'] = round(($thd + $fqh + $ing + $krt + $kjr) / 5, 2);
+            $s['rata_rata']     = round(($s['rata_akademik'] * 0.8) + ($adb * 0.2), 2);
+        }
+        unset($s);
+
+        return $students;
+    }
+
+    /**
+     * Mendapatkan alias nama pendek mapel kejuruan untuk visual kartu & label
+     */
+    public function getMapelShortAlias(string $kode, string $nama): string
+    {
+        $map = [
+            'TKJ-01' => 'Server & Cloud',
+            'TKJ-02' => 'Jarkom Mikrotik',
+            'TKJ-03' => 'Web Development',
+            'TKJ-04' => 'Hardware & Software',
+            'TB-01'  => 'Pola & Jahit',
+            'TB-02'  => 'Finishing & Bordir',
+            'FV-01'  => 'Sinematografi',
+            'FV-02'  => 'Color & Editing',
+            'DG-01'  => 'Branding & Logo',
+            'DG-02'  => 'UI/UX Design',
+            'OTO-01' => 'Mesin Injeksi',
+            'OTO-02' => 'Kelistrikan',
+            'AP-01'  => 'Spreadsheet Data',
+            'AP-02'  => 'Administrasi & Arsip'
+        ];
+
+        if (isset($map[$kode])) {
+            return $map[$kode];
+        }
+
+        $namaTrim = trim($nama);
+        if (mb_strlen($namaTrim) > 15) {
+            return mb_substr($namaTrim, 0, 15) . '...';
+        }
+        return $namaTrim;
+    }
 
     /**
      * Mengambil 5 Santri dengan Nilai Akhir Tertinggi (Termasuk 20% Adab & Akhlaq)
      */
     public function getTopStudents()
     {
-        return $this->select($this->selectFormula)
+        $students = $this->select($this->selectFormula)
             ->orderBy('rata_rata', 'DESC')
             ->orderBy('nama', 'ASC')
             ->findAll(5);
+
+        return $this->enrichStudentsWithKejuruan($students);
     }
 
     /**
@@ -32,9 +206,24 @@ class StudentModel extends Model
      */
     public function getAllStudents()
     {
-        return $this->select($this->selectFormula)
+        $students = $this->select($this->selectFormula)
             ->orderBy('id', 'ASC')
             ->findAll();
+
+        return $this->enrichStudentsWithKejuruan($students);
+    }
+
+    /**
+     * Mengambil Data Santri Berdasarkan ID dengan Kalkulasi & Detail Kejuruan Lengkap
+     */
+    public function getStudentById(int $santriId)
+    {
+        $row = $this->select($this->selectFormula)->find($santriId);
+        if (!$row) {
+            return null;
+        }
+        $res = $this->enrichStudentsWithKejuruan([$row]);
+        return $res[0] ?? null;
     }
 
     /**
@@ -42,10 +231,12 @@ class StudentModel extends Model
      */
     public function getRataRataNilai()
     {
-        $query = $this->selectAvg('(((tauhid + b_ing + menulis_kreatif + fiqih) / 4 * 0.8) + (adab_akhlaq * 0.2))', 'total_avg')->get();
-        $result = $query->getRowArray();
-
-        return round((float)($result['total_avg'] ?? 0), 2);
+        $all = $this->getAllRanking();
+        if (empty($all)) {
+            return 0.0;
+        }
+        $sum = array_sum(array_column($all, 'rata_rata'));
+        return round($sum / count($all), 2);
     }
 
     /**
@@ -60,18 +251,12 @@ class StudentModel extends Model
     }
 
     /**
-     * Mengambil Jumlah Aspek Penilaian / Mapel (Tauhid, Fiqih, B.Inggris, Menulis Kreatif, Adab & Akhlaq)
+     * Mengambil Jumlah Aspek Penilaian / Mapel (Tauhid, Fiqih, B.Inggris, Menulis Kreatif, Kejuruan Terpadu)
      */
     public function getJumlahMataPelajaran()
     {
-        $db = \Config\Database::connect();
-        $fields = $db->getFieldNames('nilai_santri');
-
-        // Kolom yang BUKAN merupakan mata pelajaran / aspek penilaian
-        $kolom_bukan_mapel = ['id', 'nama', 'nis', 'cabang', 'kelas', 'angkatan', 'status', 'foto', 'nilai_global', 'kehadiran'];
-
-        $mapel = array_diff($fields, $kolom_bukan_mapel);
-        return count($mapel);
+        // Total 5 Mata Pelajaran: 4 Mapel Umum + 1 Mapel Kejuruan (Akumulasi 2 Mapel Kejuruan)
+        return 5;
     }
 
     /**
@@ -100,12 +285,40 @@ class StudentModel extends Model
     /**
      * Mengambil Semua Ranking Santri Diurutkan dari Nilai Terbobot Tertinggi
      */
-    public function getAllRanking()
+    public function getAllRanking(?string $jurusan = null)
     {
-        return $this->select($this->selectFormula)
-            ->orderBy('rata_rata', 'DESC')
+        $builder = $this->select($this->selectFormula);
+        if (!empty($jurusan) && $jurusan !== 'all') {
+            $builder->where('kelas', $jurusan);
+        }
+        $students = $builder->orderBy('rata_rata', 'DESC')
             ->orderBy('nama', 'ASC')
             ->findAll();
+
+        $enriched = $this->enrichStudentsWithKejuruan($students);
+
+        usort($enriched, function($a, $b) {
+            if ($a['rata_rata'] == $b['rata_rata']) {
+                return strcmp($a['nama'], $b['nama']);
+            }
+            return ($a['rata_rata'] < $b['rata_rata']) ? 1 : -1;
+        });
+
+        return $enriched;
+    }
+
+    /**
+     * Mengambil Data Santri Difilter Berdasarkan Jurusan
+     */
+    public function getStudentsByJurusan(?string $jurusan = null)
+    {
+        $builder = $this->select($this->selectFormula);
+        if (!empty($jurusan) && $jurusan !== 'all') {
+            $builder->where('kelas', $jurusan);
+        }
+        $students = $builder->orderBy('id', 'ASC')->findAll();
+
+        return $this->enrichStudentsWithKejuruan($students);
     }
 
     /**
@@ -113,11 +326,7 @@ class StudentModel extends Model
      */
     public function getTop3PerClass()
     {
-        $all = $this->select($this->selectFormula)
-            ->orderBy('kelas', 'ASC')
-            ->orderBy('rata_rata', 'DESC')
-            ->orderBy('nama', 'ASC')
-            ->findAll();
+        $all = $this->getAllRanking();
 
         $topPerClass = [];
         foreach ($all as $student) {
@@ -296,8 +505,9 @@ class StudentModel extends Model
     {
         $db = \Config\Database::connect();
         return $db->table('presensi_log p')
-                  ->select('p.id, p.santri_id, p.sesi_id, p.status, p.tanggal, p.keterangan, s.nama_sesi, s.waktu, s.lokasi')
+                  ->select('p.id, p.santri_id, p.sesi_id, p.status, p.tanggal, p.keterangan, s.nama_sesi, s.waktu, s.lokasi, ns.nama as santri_nama, ns.kelas as santri_kelas, ns.nis as santri_nis')
                   ->join('sesi_kehadiran s', 's.id = p.sesi_id', 'left')
+                  ->join('nilai_santri ns', 'ns.id = p.santri_id', 'left')
                   ->orderBy('p.tanggal', 'DESC')
                   ->orderBy('p.id', 'DESC')
                   ->get()
@@ -316,12 +526,13 @@ class StudentModel extends Model
                       ROUND(AVG(fiqih), 1) as avg_fiqih,
                       ROUND(AVG(b_ing), 1) as avg_bing,
                       ROUND(AVG(menulis_kreatif), 1) as avg_menulis,
+                      ROUND(AVG(COALESCE(nilai_kejuruan, 0)), 1) as avg_kejuruan,
                       ROUND(AVG(adab_akhlaq), 1) as avg_adab,
-                      ROUND(AVG((tauhid + fiqih + b_ing + menulis_kreatif) / 4), 2) as avg_akademik,
-                      ROUND(AVG(((tauhid + fiqih + b_ing + menulis_kreatif) / 4 * 0.8) + (adab_akhlaq * 0.2)), 2) as avg_akhir,
+                      ROUND(AVG((tauhid + fiqih + b_ing + menulis_kreatif + COALESCE(nilai_kejuruan, 0)) / 5), 2) as avg_akademik,
+                      ROUND(AVG(((tauhid + fiqih + b_ing + menulis_kreatif + COALESCE(nilai_kejuruan, 0)) / 5 * 0.8) + (adab_akhlaq * 0.2)), 2) as avg_akhir,
                       ROUND(AVG(kehadiran), 1) as avg_kehadiran,
-                      MAX(((tauhid + fiqih + b_ing + menulis_kreatif) / 4 * 0.8) + (adab_akhlaq * 0.2)) as max_akhir,
-                      MIN(((tauhid + fiqih + b_ing + menulis_kreatif) / 4 * 0.8) + (adab_akhlaq * 0.2)) as min_akhir')
+                      MAX(((tauhid + fiqih + b_ing + menulis_kreatif + COALESCE(nilai_kejuruan, 0)) / 5 * 0.8) + (adab_akhlaq * 0.2)) as max_akhir,
+                      MIN(((tauhid + fiqih + b_ing + menulis_kreatif + COALESCE(nilai_kejuruan, 0)) / 5 * 0.8) + (adab_akhlaq * 0.2)) as min_akhir')
             ->groupBy('kelas')
             ->orderBy('kelas', 'ASC')
             ->get()
@@ -447,6 +658,8 @@ class StudentModel extends Model
             SUM(CASE WHEN b_ing >= 75 THEN 1 ELSE 0 END) as pass_bing,
             ROUND(AVG(menulis_kreatif), 1) as avg_menulis, MAX(menulis_kreatif) as max_menulis, MIN(menulis_kreatif) as min_menulis,
             SUM(CASE WHEN menulis_kreatif >= 75 THEN 1 ELSE 0 END) as pass_menulis,
+            ROUND(AVG(COALESCE(nilai_kejuruan, 0)), 1) as avg_kejuruan, MAX(COALESCE(nilai_kejuruan, 0)) as max_kejuruan, MIN(COALESCE(nilai_kejuruan, 0)) as min_kejuruan,
+            SUM(CASE WHEN COALESCE(nilai_kejuruan, 0) >= 75 THEN 1 ELSE 0 END) as pass_kejuruan,
             ROUND(AVG(adab_akhlaq), 1) as avg_adab, MAX(adab_akhlaq) as max_adab, MIN(adab_akhlaq) as min_adab,
             SUM(CASE WHEN adab_akhlaq >= 80 THEN 1 ELSE 0 END) as pass_adab
         ')->get()->getRowArray();
@@ -551,6 +764,31 @@ class StudentModel extends Model
                 'bobot'       => 'Akademik Terpadu',
                 'tags'        => ['Copywriting', 'Dakwah Storytelling', 'Artikel Opini', 'Media Sosial'],
                 'deskripsi'   => 'Mengasah kemampuan menulis narasi memikat, penyusunan copywriting komersial, esai dakwah, dan strategi narasi digital santri.'
+            ],
+            'kejuruan' => [
+                'id'          => 'mapel-kejuruan',
+                'key'         => 'nilai_kejuruan',
+                'nama'        => 'Kompetensi Kejuruan Terpadu',
+                'short'       => 'Kejuruan',
+                'pengampu'    => 'Tim Instruktur Kejuruan',
+                'gelar'       => 'Koordinator Bidang Kejuruan RGI',
+                'nip'         => 'INS-SG-KJR',
+                'avatar'      => 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=260&q=80',
+                'cover'       => 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80',
+                'badge_color' => 'bg-blue-600 text-white',
+                'badge_soft'  => 'bg-blue-50 text-blue-700 border-blue-200',
+                'icon'        => 'fa-microchip',
+                'kkm'         => 75,
+                'rata_rata'   => (float)($calc['avg_kejuruan'] ?? 84.5),
+                'tertinggi'   => (int)($calc['max_kejuruan'] ?? 98),
+                'terendah'    => (int)($calc['min_kejuruan'] ?? 70),
+                'kelulusan'   => round((((int)($calc['pass_kejuruan'] ?? $total)) / $total) * 100, 1),
+                'total_lulus' => (int)($calc['pass_kejuruan'] ?? $total),
+                'jadwal'      => 'Senin - Jumat (Sesi Praktik)',
+                'ruang'       => 'Lab & Bengkel Kejuruan',
+                'bobot'       => 'Akumulasi 2 Mapel Spesifik',
+                'tags'        => ['Keahlian Praktik', 'Projek Industri', 'Standard Mutu', 'Portofolio'],
+                'deskripsi'   => 'Akumulasi penilaian dua mata pelajaran kompetensi inti per jurusan (contoh TKJ: Server & Jaringan Komputer).'
             ],
             'adab_akhlaq' => [
                 'id'          => 'mapel-adab',

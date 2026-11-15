@@ -164,6 +164,17 @@
                                     <span class="block text-3xs text-slate-500 mt-0.5">Memantau perkembangan nilai, adab, dan presensi santri asuhan.</span>
                                 </div>
                             </label>
+
+                            <!-- Option Pendamping Agama / Musyrif -->
+                            <label class="role-card relative flex items-start p-3.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition">
+                                <input type="radio" name="role" value="pendamping_agama" class="mt-0.5 text-brand focus:ring-brand" onchange="handleRoleChange(this.value)">
+                                <div class="ml-3">
+                                    <span class="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-book-quran text-teal-600"></i> Pendamping Agama
+                                    </span>
+                                    <span class="block text-3xs text-slate-500 mt-0.5">Membimbing target hafalan (Juz 30/pilihan), status tasmik, dan catatan tajwid.</span>
+                                </div>
+                            </label>
                         </div>
                     </div>
 

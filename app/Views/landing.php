@@ -6,12 +6,27 @@
   <title><?= esc($title ?? 'Syiar Gemilang – Satu NIS untuk semua urusan akademik'); ?></title>
   
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="<?= base_url('favicon.ico'); ?>">
+  <link rel="icon" type="image/png" sizes="32x32" href="<?= base_url('assets/img/favicon-32x32.png'); ?>">
+  <link rel="icon" type="image/png" sizes="16x16" href="<?= base_url('assets/img/favicon-16x16.png'); ?>">
+  <link rel="shortcut icon" href="<?= base_url('favicon.ico'); ?>">
+  <link rel="apple-touch-icon" href="<?= base_url('assets/img/apple-touch-icon.png'); ?>">
+
+  <!-- PWA Manifest & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="<?= base_url('manifest.json'); ?>">
+  <meta name="theme-color" content="#0066CC">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Syiar Gemilang">
+  <script src="<?= base_url('assets/js/pwa.js'); ?>" defer></script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -39,10 +54,19 @@
               '55%': { transform: 'rotate(4deg)' },
               '80%': { transform: 'rotate(-2deg)' },
               '100%': { transform: 'rotate(-1.5deg)' },
+            },
+            pulseGlow: {
+              '0%, 100%': { boxShadow: '0 0 15px -3px rgba(255, 210, 63, 0.5)' },
+              '50%': { boxShadow: '0 0 30px 3px rgba(255, 210, 63, 0.9)' },
+            },
+            shimmer: {
+              '100%': { transform: 'translateX(100%)' },
             }
           },
           animation: {
             swing: 'swing 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) both',
+            pulseGlow: 'pulseGlow 2.5s infinite',
+            shimmer: 'shimmer 2.2s infinite',
           }
         }
       }
@@ -111,9 +135,166 @@
       }
       .lan { animation: none !important; transform: rotate(-1.5deg) !important; }
     }
+
+    /* Mobile: Card login posisinya lurus, tidak miring */
+    @media (max-width: 1023px) {
+      #cardWrap,
+      .lan {
+        animation: none !important;
+        transform: none !important;
+      }
+      #idCard {
+        transform: none !important;
+      }
+    }
+
+    /* Dynamic Island Navbar Styles */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 96px;
+    }
+    #mainNavbarWrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding-top: 0px;
+      transition: padding-top 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    #mainNavbarWrapper.is-scrolled {
+      padding-top: 14px;
+    }
+    #navbarIsland {
+      pointer-events: auto;
+      width: 100%;
+      max-width: 1180px;
+      height: 80px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 0;
+      padding-right: 0;
+      border-radius: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #mainNavbarWrapper.is-scrolled #navbarIsland {
+      max-width: 950px;
+      height: 60px;
+      padding-left: 20px;
+      padding-right: 10px;
+      border-radius: 9999px;
+      background: rgba(1, 63, 113, 0.3);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 18px 48px -8px rgba(4, 36, 63, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    }
+    #navLogoBadge {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #mainNavbarWrapper.is-scrolled #navLogoBadge {
+      width: 34px;
+      height: 34px;
+    }
+    #mainNavbarWrapper.is-scrolled #navBrandText {
+      font-size: 16px;
+    }
+    #mainNavbarWrapper.is-scrolled #navLoginBtn {
+      padding: 5px 12px;
+      font-size: 12px;
+    }
+    #mainNavbarWrapper.is-scrolled #navCtaBtn {
+      padding: 6px 14px;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body class="bg-white text-ink font-sans leading-[1.65] antialiased m-0 selection:bg-pencil selection:text-deep">
+
+  <!-- Fixed Dynamic Island Header -->
+  <header id="mainNavbarWrapper">
+    <div class="w-full max-w-[1180px] mx-auto px-4 sm:px-6 flex justify-center">
+      
+      <div id="navbarIsland" class="flex justify-between items-center">
+        <!-- Logo Brand -->
+        <a class="group flex items-center gap-2.5 sm:gap-3 font-disp font-bold text-[18px] sm:text-[20px] tracking-[-0.01em] text-white shrink-0" href="<?= base_url('/'); ?>">
+          <span id="navLogoBadge" class="w-10 h-10 rounded-xl overflow-hidden grid place-items-center transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:-rotate-6 group-hover:scale-105 shadow-sm shrink-0">
+            <img src="<?= base_url('assets/img/rgi.png'); ?>" alt="Logo Syiar Gemilang" class="w-full h-full object-contain">
+          </span>
+          <span id="navBrandText" class="transition-all duration-200 ">Syiar Gemilang</span>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden md:flex items-center gap-4 lg:gap-6 text-[13.5px] lg:text-[14.5px] font-medium text-white shrink-0" aria-label="Utama">
+          <a href="#fitur" class="opacity-85 hover:opacity-100 hover:text-white hover:underline hover:underline-offset-[6px] transition-all duration-200">
+            <span class="lg:hidden" data-i18n="nav_fitur_short">Fitur</span><span class="hidden lg:inline" data-i18n="nav_fitur">Fitur Portal</span>
+          </a>
+          <a href="#pengumuman" class="opacity-85 hover:opacity-100 hover:text-white hover:underline hover:underline-offset-[6px] transition-all duration-200">
+            <span class="lg:hidden" data-i18n="nav_pengumuman_short">Pengumuman</span><span class="hidden lg:inline" data-i18n="nav_pengumuman">Papan Pengumuman</span>
+          </a>
+          <a href="#program" class="opacity-85 hover:opacity-100 hover:text-white hover:underline hover:underline-offset-[6px] transition-all duration-200">
+            <span class="lg:hidden" data-i18n="nav_program_short">Program</span><span class="hidden lg:inline" data-i18n="nav_program">Program Keahlian</span>
+          </a>
+          <div class="h-4 w-px bg-white/20 mx-0.5" aria-hidden="true"></div>
+          <a href="<?= base_url('login'); ?>" id="navLoginBtn" class="inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-white/10 hover:bg-white/25 text-white transition-all duration-200 text-xs sm:text-sm font-semibold border border-white/20">
+            <span data-i18n="nav_login">Masuk</span>
+            <svg class="w-3.5 h-3.5 fill-none stroke-current stroke-[2] [stroke-linecap:round] [stroke-linejoin:round]"><use href="#arr"/></svg>
+          </a>
+          <!-- Tombol PPDB Daftar Sekarang di Dynamic Island -->
+          <a href="<?= base_url('ppdb'); ?>" id="navCtaBtn" class="group relative inline-flex items-center gap-2 py-2 px-4 rounded-full bg-pencil hover:bg-[#FFE066] text-deep font-disp font-extrabold text-xs sm:text-sm shadow-md transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg overflow-hidden shrink-0">
+            <span data-i18n="nav_ppdb">Daftar PPDB</span>
+            <svg class="w-3.5 h-3.5 fill-none stroke-current stroke-[2.5] [stroke-linecap:round] [stroke-linejoin:round] transition-transform group-hover:translate-x-0.5"><use href="#arr"/></svg>
+          </a>
+        </nav>
+
+        <!-- Mobile Quick Actions & Hamburger -->
+        <div class="flex items-center gap-2 md:hidden">
+          <a href="<?= base_url('ppdb'); ?>" class="py-1.5 px-3 rounded-full bg-pencil text-deep font-bold text-xs shadow-xs flex items-center gap-1">
+            <span data-i18n="nav_ppdb_short">Daftar</span>
+            <svg class="w-3 h-3 fill-none stroke-current stroke-[2.5]"><use href="#arr"/></svg>
+          </a>
+          <button type="button" id="mobileIslandToggle" onclick="toggleMobileIslandMenu()" class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center border border-white/20 transition cursor-pointer" aria-label="Buka Menu">
+            <i class="fa-solid fa-bars text-sm" id="mobileIslandIcon"></i>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Mobile Dropdown Island Menu -->
+    <div id="mobileIslandMenu" class="hidden pointer-events-auto max-w-[92%] sm:max-w-md mx-auto mt-2 rounded-2xl bg-black/20 backdrop-blur-2xl border border-white/20 p-4 shadow-2xl text-white space-y-2 animate-in fade-in slide-in-from-top-2 duration-150">
+      <a href="#fitur" onclick="closeMobileIslandMenu()" class="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold rounded-xl hover:bg-white/10 transition">
+        <i class="fa-solid fa-layer-group text-sky-400 w-5"></i> <span data-i18n="nav_fitur">Fitur portal</span>
+      </a>
+      <a href="#pengumuman" onclick="closeMobileIslandMenu()" class="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold rounded-xl hover:bg-white/10 transition">
+        <i class="fa-solid fa-bullhorn text-amber-400 w-5"></i> <span data-i18n="nav_pengumuman">Papan pengumuman</span>
+      </a>
+      <a href="#program" onclick="closeMobileIslandMenu()" class="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold rounded-xl hover:bg-white/10 transition">
+        <i class="fa-solid fa-book-open text-emerald-400 w-5"></i> <span data-i18n="nav_program">Program keahlian</span>
+      </a>
+      <a href="<?= base_url('ppdb'); ?>" onclick="closeMobileIslandMenu()" class="flex items-center justify-between px-3 py-2 text-sm font-bold text-pencil rounded-xl bg-white/5 border border-pencil/20 hover:bg-white/10 transition">
+        <span class="flex items-center gap-2.5">
+          <i class="fa-solid fa-graduation-cap w-5"></i> <span data-i18n="nav_ppdb_full">PPDB 2026 (Daftar Baru)</span>
+        </span>
+        <span class="text-3xs uppercase font-extrabold px-1.5 py-0.5 bg-pencil text-deep rounded" data-i18n="badge_open">Buka</span>
+      </a>
+      <a href="<?= base_url('ppdb/cek-status'); ?>" onclick="closeMobileIslandMenu()" class="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-sky-200 rounded-xl hover:bg-white/10 transition">
+        <i class="fa-solid fa-clipboard-check w-5"></i> <span data-i18n="nav_cek_status">Cek Status Pendaftaran</span>
+      </a>
+      <div class="pt-2 border-t border-white/10 flex items-center gap-2">
+        <a href="<?= base_url('login'); ?>" class="flex-1 py-2 text-center text-xs font-bold rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 transition" data-i18n="nav_login">
+          Halaman Login
+        </a>
+        <a href="<?= base_url('ppdb'); ?>" class="flex-1 py-2 text-center text-xs font-extrabold rounded-xl bg-pencil text-deep hover:bg-[#FFE066] shadow-sm transition" data-i18n="btn_daftar_sekarang">
+          Daftar Sekarang
+        </a>
+      </div>
+    </div>
+  </header>
 
   <!-- SVG Symbols Definition -->
   <svg width="0" height="0" class="absolute hidden" aria-hidden="true">
@@ -133,37 +314,40 @@
     <canvas id="gridCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
     
     <div class="max-w-[1180px] mx-auto px-6">
-      <!-- Navbar -->
-      <div class="flex justify-between items-center h-[84px] relative z-[3]">
-        <a class="group flex items-center gap-3 font-disp font-bold text-[20px] tracking-[-0.01em]" href="<?= base_url('/'); ?>">
-          <span class="w-10 h-10 rounded-full bg-white text-blue grid place-items-center transition-transform duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:-rotate-12 group-hover:scale-110 shadow-sm">
-            <svg class="w-[22px] h-[22px] fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round] flex-none"><use href="#cap"/></svg>
-          </span>
-          Syiar Gemilang
-        </a>
-        <nav class="hidden md:flex items-center gap-7 text-[15px] font-medium" aria-label="Utama">
-          <a href="#fitur" class="opacity-85 hover:opacity-100 hover:underline hover:underline-offset-[6px] transition-opacity duration-200">Fitur portal</a>
-          <a href="#pengumuman" class="opacity-85 hover:opacity-100 hover:underline hover:underline-offset-[6px] transition-opacity duration-200">Papan pengumuman</a>
-          <a href="#program" class="opacity-85 hover:opacity-100 hover:underline hover:underline-offset-[6px] transition-opacity duration-200">Program keahlian</a>
-          <a href="#kontak" class="opacity-85 hover:opacity-100 hover:underline hover:underline-offset-[6px] transition-opacity duration-200">Kontak</a>
-          <a href="<?= base_url('login'); ?>" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-xl bg-white/15 hover:bg-white/25 text-white transition-all duration-200 text-sm font-semibold border border-white/20">
-            Halaman Login
-            <svg class="w-4 h-4 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]"><use href="#arr"/></svg>
-          </a>
-        </nav>
-      </div>
+      <!-- Navbar Spacer (Menggantikan posisi navbar saat di atas) -->
+      <div class="h-[84px] pointer-events-none" aria-hidden="true"></div>
 
       <!-- Hero Grid -->
       <div class="relative z-[2] grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-12 items-center pt-8 md:pt-14 pb-20 md:pb-[120px]">
         <div>
+          <!-- Badge PPDB 2026 -->
           <h1 class="font-disp font-extrabold text-[clamp(46px,7.2vw,98px)] leading-[1.06] tracking-[-0.025em]">
-            Satu NIS untuk <span class="inline bg-gradient-to-b from-transparent from-[62%] via-pencil via-[62%] to-transparent to-[92%] text-deep [box-decoration-break:clone] [-webkit-box-decoration-break:clone]">semua urusan</span> akademik.
+            <span data-i18n="hero_title_1">Satu NIS untuk</span> <span class="inline bg-gradient-to-b from-transparent from-[62%] via-pencil via-[62%] to-transparent to-[92%] text-deep [box-decoration-break:clone] [-webkit-box-decoration-break:clone]" data-i18n="hero_title_highlight">semua urusan</span> <span data-i18n="hero_title_2">akademik.</span>
           </h1>
-          <p class="max-w-[46ch] text-[19px] mt-7 text-white/90">Nilai, absensi, jadwal kelas, dan materi belajar santri Rumah Gemilang Indonesia, dalam satu portal yang bisa dibuka kapan saja.</p>
+          <p class="max-w-[46ch] text-[19px] mt-7 text-white/90" data-i18n="hero_subtitle">Nilai, absensi, jadwal kelas, dan materi belajar santri Rumah Gemilang Indonesia, dalam satu portal yang bisa dibuka kapan saja.</p>
+
+          <!-- Tombol Daftar Sekarang di Hero -->
+          <div class="mt-8 flex flex-wrap items-center gap-4">
+            <a href="<?= base_url('ppdb/cek-status'); ?>" class="inline-flex items-center gap-2 py-3.5 px-5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/20 transition">
+              <svg class="w-4 h-4 fill-none stroke-current stroke-[1.8]"><use href="#clip"/></svg>
+              <span data-i18n="btn_cek_status">Cek Status Seleksi</span>
+            </a>
+
+            <!-- Tombol Pasang PWA ke Layar Utama Smartphone -->
+            <button type="button" onclick="triggerPwaInstall()" class="pwa-install-btn inline-flex items-center gap-2 py-3.5 px-5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/20 transition cursor-pointer" title="Pasang ke Layar Utama Smartphone (Add to Home Screen)">
+              <i class="fa-solid fa-mobile-screen-button text-pencil"></i>
+              <span data-i18n="btn_install_pwa">Pasang Aplikasi HP</span>
+            </button>
+          </div>
+
+          <div class="mt-3.5 flex items-center gap-2 text-xs text-white/80">
+            <span class="inline-block w-1.5 h-1.5 rounded-full"></span>
+            <span data-i18n="hero_tagline">Beasiswa Penuh 100% • 8 Jurusan Keahlian • Asrama &amp; Konsumsi Gratis</span>
+          </div>
         </div>
 
         <!-- 3D Interactive Card Container -->
-        <div class="lan flex justify-center [perspective:1000px] [transform-origin:50%_-40px] animate-swing mt-2 lg:mt-0" id="cardWrap">
+        <div class="lan flex justify-center [perspective:1000px] [transform-origin:50%_-40px] lg:animate-swing mt-2 lg:mt-0" id="cardWrap">
           <div class="w-full max-w-[380px] bg-white text-ink rounded-[24px] shadow-[0_40px_70px_-25px_rgba(0,20,40,0.55)] overflow-hidden relative [transform-style:preserve-3d] transition-[transform] duration-[0.12s] ease-out shadow-2xl before:content-[''] before:absolute before:top-3 before:left-1/2 before:w-16 before:h-2.5 before:-ml-8 before:rounded-[9px] before:bg-soft before:shadow-[inset_0_1px_2px_rgba(0,0,0,0.18)] before:z-[2]" id="idCard">
             
             <div class="id-glare absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-200 z-[3] mix-blend-overlay" id="idGlare"></div>
@@ -173,7 +357,7 @@
                 <svg class="w-[18px] h-[18px] fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round] flex-none"><use href="#cap"/></svg>
               </span>
               <div>
-                <b class="font-disp font-bold text-base leading-tight">Kartu Santri</b>
+                <b class="font-disp font-bold text-base leading-tight" data-i18n="card_title">Kartu Santri</b>
                 <small class="block text-xs opacity-70">Rumah Gemilang Indonesia</small>
               </div>
             </div>
@@ -181,10 +365,10 @@
             <div class="pt-5 px-6 pb-0 flex gap-4 items-center">
               <div class="w-[68px] h-[80px] rounded-[14px] bg-soft text-blue grid place-items-center font-disp font-extrabold text-2xl transition-[background-color,color] duration-200" id="cardAvatar" aria-hidden="true">SG</div>
               <dl class="m-0 text-[13.5px]">
-                <dt class="text-muted text-xs">Nama</dt>
+                <dt class="text-muted text-xs" data-i18n="label_nama">Nama</dt>
                 <dd class="m-0 mb-1.5 font-semibold transition-colors duration-200" id="cardName">Santri Gemilang</dd>
-                <dt class="text-muted text-xs">Nomor Induk Santri</dt>
-                <dd class="m-0 mb-1.5 font-semibold transition-colors duration-200" id="cardNis">Masukkan NIS di bawah</dd>
+                <dt class="text-muted text-xs" data-i18n="label_nis">Nomor Induk Santri</dt>
+                <dd class="m-0 mb-1.5 font-semibold transition-colors duration-200" id="cardNis" data-i18n="card_nis_placeholder">Masukkan NIS di bawah</dd>
               </dl>
             </div>
 
@@ -192,10 +376,13 @@
             <form id="f" action="<?= base_url('login'); ?>" method="POST" novalidate class="pt-[18px] px-6 pb-6">
               <?= csrf_field(); ?>
 
-              <label for="nis" class="block text-[13px] font-semibold mt-3 mb-1.5">NIS atau username</label>
+              <label for="nis" class="block text-[13px] font-semibold mt-3 mb-1.5" data-i18n="label_nis_user">NIS atau username</label>
               <input id="nis" name="username" type="text" autocomplete="username" value="<?= esc(old('username')); ?>" placeholder="Contoh: 2024001 atau username" class="w-full h-[46px] border-[1.5px] border-line rounded-xl px-3.5 font-sans font-medium text-[15px] text-ink bg-white transition-[border-color,box-shadow] duration-200 focus:outline-none focus:border-blue focus:ring-4 focus:ring-blue/15">
               
-              <label for="pw" class="block text-[13px] font-semibold mt-3 mb-1.5">Kata sandi</label>
+              <div class="flex items-center justify-between mt-3 mb-1.5">
+                <label for="pw" class="text-[13px] font-semibold" data-i18n="label_password">Kata sandi</label>
+                <a href="<?= base_url('login'); ?>" class="text-xs text-blue hover:underline" data-i18n="link_forgot_pw">Lupa kata sandi?</a>
+              </div>
               <div class="relative flex items-center">
                 <input id="pw" name="password" type="password" autocomplete="current-password" placeholder="Kata sandi" class="w-full h-[46px] border-[1.5px] border-line rounded-xl pl-3.5 pr-11 font-sans font-medium text-[15px] text-ink bg-white transition-[border-color,box-shadow] duration-200 focus:outline-none focus:border-blue focus:ring-4 focus:ring-blue/15">
                 <button type="button" class="absolute right-2.5 bg-transparent border-0 text-muted cursor-pointer p-1.5 grid place-items-center rounded-lg hover:text-blue hover:bg-soft transition-[color,background-color] duration-200" id="togglePw" aria-label="Tampilkan kata sandi">
@@ -204,7 +391,7 @@
               </div>
 
               <button id="submitBtn" class="mt-[18px] w-full h-[50px] border-0 rounded-xl bg-blue text-white font-sans font-semibold text-base cursor-pointer flex items-center justify-center gap-2.5 transition-[background-color,transform] duration-200 hover:bg-[#0067AE] hover:-translate-y-px active:translate-y-0 disabled:opacity-75 disabled:cursor-wait" type="submit">
-                <span id="submitLabel">Masuk</span> 
+                <span id="submitLabel" data-i18n="btn_login">Masuk</span> 
                 <svg id="submitIcon" class="w-[22px] h-[22px] fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round] flex-none"><use href="#arr"/></svg>
               </button>
               <p id="msg" role="status" class="min-h-[20px] mt-2.5 mb-0 text-[12.5px] text-muted"></p>
@@ -224,6 +411,8 @@
   </div>
 
   <main>
+    <!-- PPDB 2026 Showcase Banner Section -->
+    
     <!-- Feature Section -->
     <section id="fitur" class="py-[72px] md:py-[112px]">
       <div class="max-w-[1180px] mx-auto px-6 grid grid-cols-1 md:grid-cols-[0.8fr_1.2fr] gap-7 md:gap-16 items-start">
@@ -336,11 +525,12 @@
                   <!-- Card Header: Badges & Pinned Icon -->
                   <div class="flex items-center justify-between gap-3 mb-4">
                     <div class="flex items-center gap-2 flex-wrap">
-                      <span class="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[11.5px] font-semibold border <?= $kategoriMap['badge']; ?>">
-                        <span class="w-1.5 h-1.5 rounded-full <?= $kategoriMap['dot']; ?>"></span>
+                      <span class="inline-flex items-center gap-1.5 py-0.5 px-2.5 rounded text-[11px] font-semibold tracking-tight border shadow-2xs <?= $kategoriMap['badge']; ?>">
+                        <i class="fa-solid fa-bullhorn text-[9.5px]"></i>
                         <?= $kategoriMap['label']; ?>
                       </span>
-                      <span class="inline-flex items-center py-1 px-2.5 rounded-full text-[11px] font-medium bg-soft text-muted">
+                      <span class="inline-flex items-center gap-1 py-0.5 px-2.5 rounded text-[10.5px] font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                        <i class="fa-regular fa-calendar text-[9.5px] text-slate-400"></i>
                         <?= esc($ann['pekan_ke'] ?: 'Pekan Ini'); ?>
                       </span>
                     </div>
@@ -429,6 +619,9 @@
                     <h4 class="font-disp font-extrabold text-[clamp(26px,3vw,36px)] text-deep mb-3 leading-tight">Tata Busana</h4>
                     <p class="m-0 mb-6 text-muted text-[15.5px] leading-[1.65] max-w-[54ch]">Pelatihan menjahit profesional, pembuatan pola busana muslim dan kasual, pemilihan karakter tekstil, hingga manajemen produksi dan usaha butik mandiri.</p>
                     <div class="banner-actions flex flex-wrap items-center gap-3">
+                      <a href="<?= base_url('ppdb?jurusan=' . urlencode('Tata Busana')); ?>#form-daftar" class="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-pencil hover:bg-[#FFE066] text-deep font-sans font-extrabold text-[14px] shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+                        Daftar Jurusan Ini (PPDB) <svg class="w-4 h-4 fill-none stroke-current stroke-2"><use href="#arr"/></svg>
+                      </a>
                       <a href="#beranda" class="prog-cta inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-blue text-white font-sans font-semibold text-[14.5px] transition-[background-color,transform] duration-200 hover:bg-[#0067AE] hover:-translate-y-0.5" data-jurusan="Tata Busana">
                         Login santri jurusan ini <svg class="w-4 h-4 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]"><use href="#arr"/></svg>
                       </a>
@@ -469,6 +662,9 @@
                     <h4 class="font-disp font-extrabold text-[clamp(26px,3vw,36px)] text-deep mb-3 leading-tight">Teknik Komputer dan Jaringan</h4>
                     <p class="m-0 mb-6 text-muted text-[15.5px] leading-[1.65] max-w-[54ch]">Perakitan perangkat keras PC, administrasi server Linux, konfigurasi routing jaringan MikroTik, instalasi fiber optik, dan dasar keamanan siber.</p>
                     <div class="banner-actions flex flex-wrap items-center gap-3">
+                      <a href="<?= base_url('ppdb?jurusan=' . urlencode('Teknik Komputer dan Jaringan')); ?>#form-daftar" class="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-pencil hover:bg-[#FFE066] text-deep font-sans font-extrabold text-[14px] shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+                        Daftar Jurusan Ini (PPDB) <svg class="w-4 h-4 fill-none stroke-current stroke-2"><use href="#arr"/></svg>
+                      </a>
                       <a href="#beranda" class="prog-cta inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-blue text-white font-sans font-semibold text-[14.5px] transition-[background-color,transform] duration-200 hover:bg-[#0067AE] hover:-translate-y-0.5" data-jurusan="Teknik Komputer dan Jaringan">
                         Login santri jurusan ini <svg class="w-4 h-4 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]"><use href="#arr"/></svg>
                       </a>
@@ -509,6 +705,9 @@
                     <h4 class="font-disp font-extrabold text-[clamp(26px,3vw,36px)] text-deep mb-3 leading-tight">Fotografi dan Videografi</h4>
                     <p class="m-0 mb-6 text-muted text-[15.5px] leading-[1.65] max-w-[54ch]">Teknik tata cahaya studio, pengambilan gambar komersial, sinematografi, penyuntingan video, color grading, serta produksi konten kreatif digital.</p>
                     <div class="banner-actions flex flex-wrap items-center gap-3">
+                      <a href="<?= base_url('ppdb?jurusan=' . urlencode('Fotografi dan Videografi')); ?>#form-daftar" class="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-pencil hover:bg-[#FFE066] text-deep font-sans font-extrabold text-[14px] shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+                        Daftar Jurusan Ini (PPDB) <svg class="w-4 h-4 fill-none stroke-current stroke-2"><use href="#arr"/></svg>
+                      </a>
                       <a href="#beranda" class="prog-cta inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-blue text-white font-sans font-semibold text-[14.5px] transition-[background-color,transform] duration-200 hover:bg-[#0067AE] hover:-translate-y-0.5" data-jurusan="Fotografi dan Videografi">
                         Login santri jurusan ini <svg class="w-4 h-4 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]"><use href="#arr"/></svg>
                       </a>
@@ -549,6 +748,9 @@
                     <h4 class="font-disp font-extrabold text-[clamp(26px,3vw,36px)] text-deep mb-3 leading-tight">Desain Grafis</h4>
                     <p class="m-0 mb-6 text-muted text-[15.5px] leading-[1.65] max-w-[54ch]">Perancangan identitas visual merek, tipografi, ilustrasi vektor, desain kemasan produk UMKM, dan tata letak media promosi digital maupun cetak.</p>
                     <div class="banner-actions flex flex-wrap items-center gap-3">
+                      <a href="<?= base_url('ppdb?jurusan=' . urlencode('Desain Grafis')); ?>#form-daftar" class="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-pencil hover:bg-[#FFE066] text-deep font-sans font-extrabold text-[14px] shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+                        Daftar Jurusan Ini (PPDB) <svg class="w-4 h-4 fill-none stroke-current stroke-2"><use href="#arr"/></svg>
+                      </a>
                       <a href="#beranda" class="prog-cta inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-blue text-white font-sans font-semibold text-[14.5px] transition-[background-color,transform] duration-200 hover:bg-[#0067AE] hover:-translate-y-0.5" data-jurusan="Desain Grafis">
                         Login santri jurusan ini <svg class="w-4 h-4 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]"><use href="#arr"/></svg>
                       </a>
@@ -589,6 +791,9 @@
                     <h4 class="font-disp font-extrabold text-[clamp(26px,3vw,36px)] text-deep mb-3 leading-tight">Aplikasi Perkantoran</h4>
                     <p class="m-0 mb-6 text-muted text-[15.5px] leading-[1.65] max-w-[54ch]">Penguasaan pengolah dokumen korporat, spreadsheet analisis keuangan, presentasi bisnis eksekutif, serta tata kelola administrasi perkantoran modern.</p>
                     <div class="banner-actions flex flex-wrap items-center gap-3">
+                      <a href="<?= base_url('ppdb?jurusan=' . urlencode('Aplikasi Perkantoran')); ?>#form-daftar" class="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-pencil hover:bg-[#FFE066] text-deep font-sans font-extrabold text-[14px] shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+                        Daftar Jurusan Ini (PPDB) <svg class="w-4 h-4 fill-none stroke-current stroke-2"><use href="#arr"/></svg>
+                      </a>
                       <a href="#beranda" class="prog-cta inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-blue text-white font-sans font-semibold text-[14.5px] transition-[background-color,transform] duration-200 hover:bg-[#0067AE] hover:-translate-y-0.5" data-jurusan="Aplikasi Perkantoran">
                         Login santri jurusan ini <svg class="w-4 h-4 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]"><use href="#arr"/></svg>
                       </a>
@@ -629,6 +834,9 @@
                     <h4 class="font-disp font-extrabold text-[clamp(26px,3vw,36px)] text-deep mb-3 leading-tight">Teknik Sepeda Motor</h4>
                     <p class="m-0 mb-6 text-muted text-[15.5px] leading-[1.65] max-w-[54ch]">Perawatan berkala mesin konvensional dan sistem injeksi (FI), kelistrikan kendaraan roda dua, diagnostik scanner, hingga manajemen bengkel mandiri.</p>
                     <div class="banner-actions flex flex-wrap items-center gap-3">
+                      <a href="<?= base_url('ppdb?jurusan=' . urlencode('Otomotif')); ?>#form-daftar" class="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-pencil hover:bg-[#FFE066] text-deep font-sans font-extrabold text-[14px] shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+                        Daftar Jurusan Ini (PPDB) <svg class="w-4 h-4 fill-none stroke-current stroke-2"><use href="#arr"/></svg>
+                      </a>
                       <a href="#beranda" class="prog-cta inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-blue text-white font-sans font-semibold text-[14.5px] transition-[background-color,transform] duration-200 hover:bg-[#0067AE] hover:-translate-y-0.5" data-jurusan="Teknik Sepeda Motor">
                         Login santri jurusan ini <svg class="w-4 h-4 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]"><use href="#arr"/></svg>
                       </a>
@@ -669,6 +877,9 @@
                     <h4 class="font-disp font-extrabold text-[clamp(26px,3vw,36px)] text-deep mb-3 leading-tight">Rekayasa Perangkat Lunak</h4>
                     <p class="m-0 mb-6 text-muted text-[15.5px] leading-[1.65] max-w-[54ch]">Pengembangan aplikasi web full-stack, perancangan basis data relasional, integrasi REST API, dan pemrograman berorientasi objek siap kerja.</p>
                     <div class="banner-actions flex flex-wrap items-center gap-3">
+                      <a href="<?= base_url('ppdb?jurusan=' . urlencode('Rekayasa Perangkat Lunak')); ?>#form-daftar" class="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-pencil hover:bg-[#FFE066] text-deep font-sans font-extrabold text-[14px] shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+                        Daftar Jurusan Ini (PPDB) <svg class="w-4 h-4 fill-none stroke-current stroke-2"><use href="#arr"/></svg>
+                      </a>
                       <a href="#beranda" class="prog-cta inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-blue text-white font-sans font-semibold text-[14.5px] transition-[background-color,transform] duration-200 hover:bg-[#0067AE] hover:-translate-y-0.5" data-jurusan="Rekayasa Perangkat Lunak">
                         Login santri jurusan ini <svg class="w-4 h-4 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]"><use href="#arr"/></svg>
                       </a>
@@ -709,6 +920,9 @@
                     <h4 class="font-disp font-extrabold text-[clamp(26px,3vw,36px)] text-deep mb-3 leading-tight">Kuliner Halal</h4>
                     <p class="m-0 mb-6 text-muted text-[15.5px] leading-[1.65] max-w-[54ch]">Pengolahan hidangan nusantara dan kontinental berstandar halal, higienitas keamanan pangan, pastry & bakery, serta perhitungan HPP usaha kuliner.</p>
                     <div class="banner-actions flex flex-wrap items-center gap-3">
+                      <a href="<?= base_url('ppdb?jurusan=' . urlencode('Kuliner Halal')); ?>#form-daftar" class="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-pencil hover:bg-[#FFE066] text-deep font-sans font-extrabold text-[14px] shadow-sm transition-all duration-200 hover:-translate-y-0.5">
+                        Daftar Jurusan Ini (PPDB) <svg class="w-4 h-4 fill-none stroke-current stroke-2"><use href="#arr"/></svg>
+                      </a>
                       <a href="#beranda" class="prog-cta inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-blue text-white font-sans font-semibold text-[14.5px] transition-[background-color,transform] duration-200 hover:bg-[#0067AE] hover:-translate-y-0.5" data-jurusan="Kuliner Halal">
                         Login santri jurusan ini <svg class="w-4 h-4 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]"><use href="#arr"/></svg>
                       </a>
@@ -733,24 +947,240 @@
   </main>
 
   <!-- Footer -->
-  <footer id="kontak" class="bg-deep text-white pt-[72px] pb-7 overflow-hidden">
+  <footer id="kontak" class="bg-deep text-white pt-16 pb-8 overflow-hidden">
     <div class="max-w-[1180px] mx-auto px-6">
-      <p class="mark font-disp font-extrabold text-[clamp(52px,13vw,190px)] leading-[0.9] tracking-[-0.05em] text-blue m-0 mb-12 whitespace-nowrap transition-transform duration-100 ease-out select-none" id="footerMark" aria-hidden="true">Syiar Gemilang</p>
+      
+      <!-- Kontak & Info Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-12 border-b border-white/15">
+        <!-- Kolom 1: Profil RGI -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-15 h-15 ">
+              <img src="<?= base_url('assets/img/logoRGI.png'); ?>" alt="Logo RGI" class="w-full h-full object-contain">
+            </span>
+            <div>
+              <h3 class="font-disp font-extrabold text-lg leading-tight text-white">Rumah Gemilang Indonesia</h3>
+              <p class="text-xs text-pencil font-medium">Pusat Pemberdayaan Pemuda Dhuafa</p>
+            </div>
+          </div>
+          <p class="text-xs text-white/70 leading-relaxed">
+            Lembaga diklat vokasi kilat 100% beasiswa penuh dengan pembinaan karakter akhlaq Qur'ani, mencetak generasi mandiri dan profesional siap kerja.
+          </p>
+          <div class="text-xs text-white/60">
+            <span class="text-pencil font-bold">Motto:</span> Mengubah Mustahik Menjadi Muzakki.
+          </div>
+        </div>
+
+        <!-- Kolom 2: Kontak Resmi RGI (Dimulai dari Instagram, No Admin, dll) -->
+        <div class="space-y-3">
+          <h4 class="font-disp font-bold text-sm tracking-wider uppercase text-pencil flex items-center gap-2" data-i18n="footer_contact_title">
+            <i class="fa-solid fa-headset text-pencil"></i> Kontak Resmi RGI
+          </h4>
+          <ul class="space-y-2.5 text-xs text-white/80">
+            <li>
+              <a href="https://www.instagram.com/rumahgemilang" target="_blank" rel="noopener" class="group flex items-center gap-2.5 hover:text-pencil transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-pink-400 group-hover:bg-pencil group-hover:text-deep transition-all shrink-0">
+                  <i class="fa-brands fa-instagram text-sm"></i>
+                </span>
+                <div>
+                  <span class="block text-3xs text-white/50 uppercase font-semibold">Instagram Resmi</span>
+                  <span class="font-medium">@rumahgemilangindonesia</span>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="https://wa.me/6281234567890?text=Halo%20Admin%20RGI" target="_blank" rel="noopener" class="group flex items-center gap-2.5 hover:text-pencil transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-emerald-400 group-hover:bg-pencil group-hover:text-deep transition-all shrink-0">
+                  <i class="fa-brands fa-whatsapp text-sm"></i>
+                </span>
+                <div>
+                  <span class="block text-3xs text-white/50 uppercase font-semibold">No. Admin &amp; WhatsApp</span>
+                  <span class="font-medium">+62 812-3456-7890</span>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="mailto: rumahgemilang1@gmail.com" class="group flex items-center gap-2.5 hover:text-pencil transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-sky-400 group-hover:bg-pencil group-hover:text-deep transition-all shrink-0">
+                  <i class="fa-solid fa-envelope text-xs"></i>
+                </span>
+                <div>
+                  <span class="block text-3xs text-white/50 uppercase font-semibold">Email Diklat RGI</span>
+                  <span class="font-medium">diklat@rgi.or.id</span>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="https://www.youtube.com/@rumahgemilang" target="_blank" rel="noopener" class="group flex items-center gap-2.5 hover:text-pencil transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-rose-500 group-hover:bg-pencil group-hover:text-deep transition-all shrink-0">
+                  <i class="fa-brands fa-youtube text-xs"></i>
+                </span>
+                <div>
+                  <span class="block text-3xs text-white/50 uppercase font-semibold">YouTube Official</span>
+                  <span class="font-medium">Rumah Gemilang Indonesia</span>
+                </div>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Kolom 3: Kampus Utama & Pelayanan -->
+        <div class="space-y-3">
+          <h4 class="font-disp font-bold text-sm tracking-wider uppercase text-pencil flex items-center gap-2" data-i18n="footer_campus_title">
+            <i class="fa-solid fa-map-location-dot text-pencil"></i> Kampus Utama &amp; Waktu
+          </h4>
+          <div class="text-xs text-white/80 space-y-2.5 leading-relaxed">
+            <p class="flex items-start gap-2">
+              <i class="fa-solid fa-location-dot text-rose-400 mt-1 shrink-0"></i>
+              <span><strong>Kampus Utama:</strong> Jl. Raya Sawangan No. 1, Sawangan, Kota Depok, Jawa Barat 16511</span>
+            </p>
+            <p class="flex items-start gap-2">
+              <i class="fa-solid fa-globe text-sky-300 mt-1 shrink-0"></i>
+              <span><strong>Website:</strong> <a href="https://rumahgemilang.com" target="_blank" rel="noopener" class="text-white hover:text-pencil underline">rumahgemilang.com</a></span>
+            </p>
+            <p class="flex items-start gap-2">
+              <i class="fa-regular fa-clock text-amber-300 mt-1 shrink-0"></i>
+              <span><strong>Jam Pelayanan TU / Admin:</strong><br>Senin – Sabtu: 08.00 – 17.00 WIB</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Kolom 4: Navigasi Tautan Cepat -->
+        <div class="space-y-3">
+          <h4 class="font-disp font-bold text-sm tracking-wider uppercase text-pencil flex items-center gap-2" data-i18n="footer_links_title">
+            <i class="fa-solid fa-compass text-pencil"></i> Tautan Cepat
+          </h4>
+          <ul class="space-y-2 text-xs text-white/80">
+            <li><a href="<?= base_url('ppdb'); ?>" class="hover:text-pencil transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chevron-right text-3xs text-pencil"></i> PPDB 2026 (Daftar Baru)</a></li>
+            <li><a href="<?= base_url('ppdb/cek-status'); ?>" class="hover:text-pencil transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chevron-right text-3xs text-pencil"></i> Cek Status Pendaftaran</a></li>
+            <li><a href="<?= base_url('login'); ?>" class="hover:text-pencil transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chevron-right text-3xs text-pencil"></i> Masuk ke Portal (SIA)</a></li>
+            <li><a href="#pengumuman" class="hover:text-pencil transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chevron-right text-3xs text-pencil"></i> Papan Pengumuman</a></li>
+            <li><a href="#program" class="hover:text-pencil transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chevron-right text-3xs text-pencil"></i> 8 Program Keahlian</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="mark font-disp font-extrabold text-[clamp(52px,13vw,190px)] leading-[0.9] tracking-[-0.05em] text-blue m-0 my-10 whitespace-nowrap transition-transform duration-100 ease-out select-none" id="footerMark" aria-hidden="true">Syiar Gemilang</p>
+      
+      <!-- Kontak & Info Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-12 border-b border-white/15">
+        <!-- Kolom 1: Profil RGI -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl overflow-hidden grid place-items-center bg-white p-1 shadow-sm shrink-0">
+              <img src="<?= base_url('assets/img/rgi.png'); ?>" alt="Logo RGI" class="w-full h-full object-contain">
+            </span>
+            <div>
+              <h3 class="font-disp font-extrabold text-lg leading-tight text-white">Rumah Gemilang Indonesia</h3>
+              <p class="text-xs text-pencil font-medium">Pusat Pemberdayaan Pemuda Dhuafa</p>
+            </div>
+          </div>
+          <p class="text-xs text-white/70 leading-relaxed">
+            Lembaga diklat vokasi kilat 100% beasiswa penuh dengan pembinaan karakter akhlaq Qur'ani, mencetak generasi mandiri dan profesional siap kerja.
+          </p>
+          <div class="text-xs text-white/60">
+            <span class="text-pencil font-bold">Motto:</span> Mengubah Mustahik Menjadi Muzakki.
+          </div>
+        </div>
+
+        <!-- Kolom 2: Kontak Resmi RGI (Dimulai dari Instagram, No Admin, dll) -->
+        <div class="space-y-3">
+          <h4 class="font-disp font-bold text-sm tracking-wider uppercase text-pencil flex items-center gap-2" data-i18n="footer_contact_title">
+            <i class="fa-solid fa-headset text-pencil"></i> Kontak Resmi RGI
+          </h4>
+          <ul class="space-y-2.5 text-xs text-white/80">
+            <li>
+              <a href="https://www.instagram.com/rumahgemilangindonesia" target="_blank" rel="noopener" class="group flex items-center gap-2.5 hover:text-pencil transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-pink-400 group-hover:bg-pencil group-hover:text-deep transition-all shrink-0">
+                  <i class="fa-brands fa-instagram text-sm"></i>
+                </span>
+                <div>
+                  <span class="block text-3xs text-white/50 uppercase font-semibold">Instagram Resmi</span>
+                  <span class="font-medium">@rumahgemilangindonesia</span>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="https://wa.me/6281234567890?text=Halo%20Admin%20RGI" target="_blank" rel="noopener" class="group flex items-center gap-2.5 hover:text-pencil transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-emerald-400 group-hover:bg-pencil group-hover:text-deep transition-all shrink-0">
+                  <i class="fa-brands fa-whatsapp text-sm"></i>
+                </span>
+                <div>
+                  <span class="block text-3xs text-white/50 uppercase font-semibold">No. Admin &amp; WhatsApp</span>
+                  <span class="font-medium">+62 812-3456-7890</span>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="mailto:diklat@rgi.or.id" class="group flex items-center gap-2.5 hover:text-pencil transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-sky-400 group-hover:bg-pencil group-hover:text-deep transition-all shrink-0">
+                  <i class="fa-solid fa-envelope text-xs"></i>
+                </span>
+                <div>
+                  <span class="block text-3xs text-white/50 uppercase font-semibold">Email Diklat RGI</span>
+                  <span class="font-medium">diklat@rgi.or.id</span>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="https://www.youtube.com/@rumahgemilangindonesia" target="_blank" rel="noopener" class="group flex items-center gap-2.5 hover:text-pencil transition-colors">
+                <span class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-rose-500 group-hover:bg-pencil group-hover:text-deep transition-all shrink-0">
+                  <i class="fa-brands fa-youtube text-xs"></i>
+                </span>
+                <div>
+                  <span class="block text-3xs text-white/50 uppercase font-semibold">YouTube Official</span>
+                  <span class="font-medium">Rumah Gemilang Indonesia</span>
+                </div>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Kolom 3: Kampus Utama & Pelayanan -->
+        <div class="space-y-3">
+          <h4 class="font-disp font-bold text-sm tracking-wider uppercase text-pencil flex items-center gap-2" data-i18n="footer_campus_title">
+            <i class="fa-solid fa-map-location-dot text-pencil"></i> Kampus Utama &amp; Waktu
+          </h4>
+          <div class="text-xs text-white/80 space-y-2.5 leading-relaxed">
+            <p class="flex items-start gap-2">
+              <i class="fa-solid fa-location-dot text-rose-400 mt-1 shrink-0"></i>
+              <span><strong>Kampus Utama:</strong> Jl. Raya Sawangan No. 1, Sawangan, Kota Depok, Jawa Barat 16511</span>
+            </p>
+            <p class="flex items-start gap-2">
+              <i class="fa-solid fa-globe text-sky-300 mt-1 shrink-0"></i>
+              <span><strong>Website:</strong> <a href="https://rgi.or.id" target="_blank" rel="noopener" class="text-white hover:text-pencil underline">rgi.or.id</a></span>
+            </p>
+            <p class="flex items-start gap-2">
+              <i class="fa-regular fa-clock text-amber-300 mt-1 shrink-0"></i>
+              <span><strong>Jam Pelayanan TU / Admin:</strong><br>Senin – Sabtu: 08.00 – 16.00 WIB</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Kolom 4: Navigasi Tautan Cepat -->
+        <div class="space-y-3">
+          <h4 class="font-disp font-bold text-sm tracking-wider uppercase text-pencil flex items-center gap-2" data-i18n="footer_links_title">
+            <i class="fa-solid fa-compass text-pencil"></i> Tautan Cepat
+          </h4>
+          <ul class="space-y-2 text-xs text-white/80">
+            <li><a href="<?= base_url('ppdb'); ?>" class="hover:text-pencil transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chevron-right text-3xs text-pencil"></i> PPDB 2026 (Daftar Baru)</a></li>
+            <li><a href="<?= base_url('ppdb/cek-status'); ?>" class="hover:text-pencil transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chevron-right text-3xs text-pencil"></i> Cek Status Pendaftaran</a></li>
+            <li><a href="<?= base_url('login'); ?>" class="hover:text-pencil transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chevron-right text-3xs text-pencil"></i> Masuk ke Portal (SIA)</a></li>
+            <li><a href="#pengumuman" class="hover:text-pencil transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chevron-right text-3xs text-pencil"></i> Papan Pengumuman</a></li>
+            <li><a href="#program" class="hover:text-pencil transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chevron-right text-3xs text-pencil"></i> 8 Program Keahlian</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="mark font-disp font-extrabold text-[clamp(52px,13vw,190px)] leading-[0.9] tracking-[-0.05em] text-blue m-0 my-10 whitespace-nowrap transition-transform duration-100 ease-out select-none" id="footerMark" aria-hidden="true">Syiar Gemilang</p>
       
       <div class="flex flex-wrap gap-5 justify-between items-center text-sm text-white/70 border-t border-white/15 pt-6">
-        <span>© 2026 Syiar Gemilang. Sistem Informasi Akademik Rumah Gemilang Indonesia.</span>
+        <span data-i18n="footer_copy">© 2026 Syiar Gemilang. Sistem Informasi Akademik Rumah Gemilang Indonesia.</span>
         
-        <nav class="flex gap-6" aria-label="Footer">
-          <a href="#fitur" class="hover:text-white transition-colors duration-200">Fitur portal</a>
-          <a href="#pengumuman" class="hover:text-white transition-colors duration-200">Papan pengumuman</a>
-          <a href="#program" class="hover:text-white transition-colors duration-200">Program keahlian</a>
-          <a href="<?= base_url('login'); ?>" class="hover:text-white transition-colors duration-200 font-medium">Halaman login</a>
-        </nav>
-
-        <span class="inline-flex" id="langSwitch">
-          <button type="button" class="bg-transparent border-0 text-white font-semibold cursor-pointer py-0 px-2.5 transition-colors duration-200" data-lang="id">Indonesia</button>
-          <button type="button" class="bg-transparent border-0 text-white/70 hover:text-white cursor-pointer py-0 px-2.5 border-l border-white/20 transition-colors duration-200" data-lang="en">English</button>
-          <button type="button" class="bg-transparent border-0 text-white/70 hover:text-white cursor-pointer py-0 px-2.5 border-l border-white/20 transition-colors duration-200" data-lang="ar" lang="ar">العربية</button>
+        <span class="inline-flex items-center rounded-xl bg-white/10 p-1 border border-white/20" id="langSwitch">
+          <button type="button" class="bg-transparent border-0 text-white font-semibold cursor-pointer py-1 px-3 rounded-lg transition-colors duration-200" data-lang="id">Indonesia</button>
+          <button type="button" class="bg-transparent border-0 text-white/70 hover:text-white cursor-pointer py-1 px-3 rounded-lg transition-colors duration-200" data-lang="en">English</button>
+          <button type="button" class="bg-transparent border-0 text-white/70 hover:text-white cursor-pointer py-1 px-3 rounded-lg transition-colors duration-200" data-lang="ar" lang="ar">العربية</button>
         </span>
       </div>
     </div>
@@ -862,29 +1292,60 @@
     }
     drawGrid();
 
-    // 2. Interactive 3D Tilt & Glare on Kartu Santri
-    const cardWrap = document.getElementById('cardWrap');
+    // 2. Interactive 3D Tilt & Glare on Kartu Santri (Tracking across Hero section)
+    const heroSection = document.getElementById('beranda');
     const idCard = document.getElementById('idCard');
     const idGlare = document.getElementById('idGlare');
+    const isMobileDevice = () => window.innerWidth < 1024 || (window.matchMedia && window.matchMedia('(max-width: 1023px)').matches);
 
-    if (!reducedMotion && cardWrap && idCard) {
-      cardWrap.addEventListener('pointermove', (e) => {
-        const rect = idCard.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const rotateX = ((y - centerY) / centerY) * -6;
-        const rotateY = ((x - centerX) / centerX) * 6;
+    if (!reducedMotion && heroSection && idCard) {
+      if (!isMobileDevice()) {
+        idCard.style.transform = 'perspective(1000px) rotateY(-4deg) rotateX(2deg) rotate(-1.5deg)';
+      }
 
-        idCard.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
-        idGlare.style.opacity = '1';
-        idGlare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.45), transparent 65%)`;
+      heroSection.addEventListener('pointermove', (e) => {
+        if (isMobileDevice() || e.pointerType === 'touch') {
+          idCard.style.transform = 'none';
+          if (idGlare) idGlare.style.opacity = '0';
+          return;
+        }
+
+        const r = idCard.getBoundingClientRect();
+        const ry = (((e.clientX - r.left - r.width / 2) / window.innerWidth) * 16).toFixed(2);
+        const rx = (-((e.clientY - r.top - r.height / 2) / window.innerHeight) * 12).toFixed(2);
+
+        idCard.style.transform = `perspective(1000px) rotateY(${ry}deg) rotateX(${rx}deg) rotate(-1.5deg)`;
+        
+        if (idGlare) {
+          const x = e.clientX - r.left;
+          const y = e.clientY - r.top;
+          if (x >= 0 && x <= r.width && y >= 0 && y <= r.height) {
+            idGlare.style.opacity = '1';
+            idGlare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.45), transparent 65%)`;
+          } else {
+            idGlare.style.opacity = '0.2';
+            idGlare.style.background = `radial-gradient(circle at 50% 30%, rgba(255,255,255,0.3), transparent 70%)`;
+          }
+        }
       });
 
-      cardWrap.addEventListener('pointerleave', () => {
-        idCard.style.transform = '';
-        idGlare.style.opacity = '0';
+      heroSection.addEventListener('pointerleave', () => {
+        if (isMobileDevice()) {
+          idCard.style.transform = 'none';
+          if (idGlare) idGlare.style.opacity = '0';
+          return;
+        }
+        idCard.style.transform = 'perspective(1000px) rotateY(-4deg) rotateX(2deg) rotate(-1.5deg)';
+        if (idGlare) idGlare.style.opacity = '0';
+      });
+
+      window.addEventListener('resize', () => {
+        if (isMobileDevice()) {
+          idCard.style.transform = 'none';
+          if (idGlare) idGlare.style.opacity = '0';
+        } else {
+          idCard.style.transform = 'perspective(1000px) rotateY(-4deg) rotateX(2deg) rotate(-1.5deg)';
+        }
       });
     }
 
@@ -1045,18 +1506,161 @@
       }, { passive: true });
     }
 
-    // 6. Interactive Language Switcher Feedback
+    // 6. Interactive Multi-language Engine (ID, EN, AR with RTL Support)
+    const translations = {
+      id: {
+        nav_fitur: 'Fitur Portal',
+        nav_fitur_short: 'Fitur',
+        nav_pengumuman: 'Papan Pengumuman',
+        nav_pengumuman_short: 'Pengumuman',
+        nav_program: 'Program Keahlian',
+        nav_program_short: 'Program',
+        nav_login: 'Masuk',
+        nav_ppdb: 'Daftar PPDB',
+        nav_ppdb_short: 'Daftar',
+        nav_ppdb_full: 'PPDB 2026 (Daftar Baru)',
+        badge_open: 'Buka',
+        nav_cek_status: 'Cek Status Pendaftaran',
+        btn_daftar_sekarang: 'Daftar Sekarang',
+        hero_title_1: 'Satu NIS untuk',
+        hero_title_highlight: 'semua urusan',
+        hero_title_2: 'akademik.',
+        hero_subtitle: 'Nilai, absensi, jadwal kelas, dan materi belajar santri Rumah Gemilang Indonesia, dalam satu portal yang bisa dibuka kapan saja.',
+        btn_cek_status: 'Cek Status Seleksi',
+        btn_install_pwa: 'Pasang Aplikasi HP',
+        hero_tagline: 'Beasiswa Penuh 100% • 8 Jurusan Keahlian • Asrama & Konsumsi Gratis',
+        card_title: 'Kartu Santri',
+        label_nama: 'Nama',
+        label_nis: 'Nomor Induk Santri',
+        card_nis_placeholder: 'Masukkan NIS di bawah',
+        label_nis_user: 'NIS atau username',
+        label_password: 'Kata sandi',
+        link_forgot_pw: 'Lupa kata sandi?',
+        btn_login: 'Masuk',
+        footer_copy: '© 2026 Syiar Gemilang. Sistem Informasi Akademik Rumah Gemilang Indonesia.',
+        footer_contact_title: 'Kontak Resmi RGI',
+        footer_campus_title: 'Kampus Utama & Waktu',
+        footer_links_title: 'Tautan Cepat'
+      },
+      en: {
+        nav_fitur: 'Portal Features',
+        nav_fitur_short: 'Features',
+        nav_pengumuman: 'Announcements',
+        nav_pengumuman_short: 'Notices',
+        nav_program: 'Vocational Programs',
+        nav_program_short: 'Programs',
+        nav_login: 'Login',
+        nav_ppdb: 'PPDB Admission',
+        nav_ppdb_short: 'Apply',
+        nav_ppdb_full: 'Admission 2026 (Apply Now)',
+        badge_open: 'Open',
+        nav_cek_status: 'Check Application Status',
+        btn_daftar_sekarang: 'Apply Now',
+        hero_title_1: 'One Student ID for',
+        hero_title_highlight: 'all academic affairs',
+        hero_title_2: 'in one place.',
+        hero_subtitle: 'Grades, attendance, class schedules, and learning materials for Rumah Gemilang Indonesia students, in one portal accessible anytime.',
+        btn_cek_status: 'Check Admission Status',
+        btn_install_pwa: 'Install Mobile App',
+        hero_tagline: '100% Full Scholarship • 8 Vocational Majors • Free Boarding & Meals',
+        card_title: 'Student ID Card',
+        label_nama: 'Name',
+        label_nis: 'Student ID Number',
+        card_nis_placeholder: 'Enter Student ID below',
+        label_nis_user: 'Student ID or username',
+        label_password: 'Password',
+        link_forgot_pw: 'Forgot password?',
+        btn_login: 'Sign In',
+        footer_copy: '© 2026 Syiar Gemilang. Academic Information System of Rumah Gemilang Indonesia.',
+        footer_contact_title: 'Official RGI Contacts',
+        footer_campus_title: 'Main Campus & Hours',
+        footer_links_title: 'Quick Links'
+      },
+      ar: {
+        nav_fitur: 'ميزات البوابة',
+        nav_fitur_short: 'الميزات',
+        nav_pengumuman: 'لوحة الإعلانات',
+        nav_pengumuman_short: 'الإعلانات',
+        nav_program: 'الأقسام المهنية',
+        nav_program_short: 'الأقسام',
+        nav_login: 'تسجيل الدخول',
+        nav_ppdb: 'التسجيل الجديد',
+        nav_ppdb_short: 'سجل الآن',
+        nav_ppdb_full: 'القبول والتسجيل 2026',
+        badge_open: 'مفتوح',
+        nav_cek_status: 'التحقق من حالة القبول',
+        btn_daftar_sekarang: 'سجل الآن مجاناً',
+        hero_title_1: 'رقم قيد واحد لـ',
+        hero_title_highlight: 'كافة الشؤون',
+        hero_title_2: 'الأكاديمية.',
+        hero_subtitle: 'الدرجات، الحضور والغياب، الجداول الدراسية، والمواد التعليمية لطلاب معهد روجي في بوابة واحدة متاحة دائماً.',
+        btn_cek_status: 'التحقق من حالة القبول',
+        btn_install_pwa: 'تثبيت تطبيق الهاتف',
+        hero_tagline: 'منحة دراسية كاملة 100% • 8 تخصصات مهنية • سكن وإعاشة مجاناً',
+        card_title: 'بطاقة الطالب',
+        label_nama: 'اسم الطالب',
+        label_nis: 'رقم القيد الأكاديمي',
+        card_nis_placeholder: 'أدخل رقم القيد أدناه',
+        label_nis_user: 'رقم القيد أو اسم المستخدم',
+        label_password: 'كلمة المرور',
+        link_forgot_pw: 'نسيت كلمة المرور؟',
+        btn_login: 'دخول البوابة',
+        footer_copy: '© 2026 شعار جميلاّنغ. نظام المعلومات الأكاديمي لمعهد روجي إندونيسيا.',
+        footer_contact_title: 'جهات الاتصال الرسمية',
+        footer_campus_title: 'المقر الرئيسي والمواعيد',
+        footer_links_title: 'روابط سريعة'
+      }
+    };
+
+    function applyLanguage(lang) {
+      const dict = translations[lang] || translations.id;
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.textContent = dict[key];
+        }
+      });
+
+      // Direction and Language attribute
+      if (lang === 'ar') {
+        document.documentElement.setAttribute('dir', 'rtl');
+        document.documentElement.setAttribute('lang', 'ar');
+        document.body.classList.add('rtl-arabic');
+      } else {
+        document.documentElement.setAttribute('dir', 'ltr');
+        document.documentElement.setAttribute('lang', lang);
+        document.body.classList.remove('rtl-arabic');
+      }
+
+      // Update switcher buttons UI
+      const langBtns = document.querySelectorAll('#langSwitch button');
+      langBtns.forEach((btn) => {
+        const btnLang = btn.getAttribute('data-lang');
+        if (btnLang === lang) {
+          btn.classList.add('text-white', 'font-semibold', 'bg-white/20');
+          btn.classList.remove('text-white/70');
+        } else {
+          btn.classList.remove('text-white', 'font-semibold', 'bg-white/20');
+          btn.classList.add('text-white/70');
+        }
+      });
+
+      localStorage.setItem('syiar_lang', lang);
+    }
+
     const langBtns = document.querySelectorAll('#langSwitch button');
     langBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
-        langBtns.forEach((b) => {
-          b.classList.remove('text-white', 'font-semibold');
-          b.classList.add('text-white/70');
-        });
-        btn.classList.add('text-white', 'font-semibold');
-        btn.classList.remove('text-white/70');
+        const lang = btn.getAttribute('data-lang');
+        applyLanguage(lang);
       });
     });
+
+    // Inisialisasi bahasa tersimpan
+    const savedLang = localStorage.getItem('syiar_lang') || 'id';
+    if (savedLang !== 'id') {
+      applyLanguage(savedLang);
+    }
 
     // 7. Interactive Filter Papan Pengumuman Diklat
     const annFilterBtns = document.querySelectorAll('.ann-filter-btn');
@@ -1081,6 +1685,53 @@
         });
       });
     });
+
+    // 8. Dynamic Island Navbar Scroll Animation
+    const islandWrapper = document.getElementById('mainNavbarWrapper');
+
+    function handleIslandScroll() {
+      if (!islandWrapper) return;
+      const scrollPos = window.scrollY || window.pageYOffset;
+      if (scrollPos > 40) {
+        islandWrapper.classList.add('is-scrolled');
+      } else {
+        islandWrapper.classList.remove('is-scrolled');
+      }
+    }
+
+    window.addEventListener('scroll', handleIslandScroll, { passive: true });
+    handleIslandScroll();
+
+    // 9. Mobile Island Menu Helpers (Global Scope for inline onclick)
+    window.toggleMobileIslandMenu = function() {
+      const menu = document.getElementById('mobileIslandMenu');
+      const icon = document.getElementById('mobileIslandIcon');
+      if (menu) {
+        if (menu.classList.contains('hidden')) {
+          menu.classList.remove('hidden');
+          if (icon) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-xmark');
+          }
+        } else {
+          menu.classList.add('hidden');
+          if (icon) {
+            icon.classList.remove('fa-xmark');
+            icon.classList.add('fa-bars');
+          }
+        }
+      }
+    };
+
+    window.closeMobileIslandMenu = function() {
+      const menu = document.getElementById('mobileIslandMenu');
+      const icon = document.getElementById('mobileIslandIcon');
+      if (menu) menu.classList.add('hidden');
+      if (icon) {
+        icon.classList.remove('fa-xmark');
+        icon.classList.add('fa-bars');
+      }
+    };
   })();
   </script>
 </body>

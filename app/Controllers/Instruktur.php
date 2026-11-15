@@ -283,5 +283,133 @@ class Instruktur extends BaseController
         fclose($output);
         exit;
     }
+
+    // =========================================================================
+    // MODUL MAPEL & KOMPETENSI KEJURUAN DINAMIS (BOBOT TUGAS, TEORI, PRAKTIK)
+    // =========================================================================
+
+    /**
+     * Halaman Pengelolaan Nilai Kompetensi Kejuruan & Pembobotan
+     */
+    public function kompetensi()
+    {
+        $mapelModel   = new \App\Models\MapelModel();
+        $instrukturId = (int)session()->get('user_id');
+
+        // Ambil mapel yang diampu instruktur ini
+        $myMapels = $mapelModel->getMapelByInstruktur($instrukturId);
+        if (empty($myMapels)) {
+            // Jika belum di-assign spesifik, tampilkan seluruh mapel yang ada
+            $myMapels = $mapelModel->getAllMapelWithInstruktur();
+        }
+
+        $allMapels = $mapelModel->getAllMapelWithInstruktur();
+
+        $selectedMapelId = (int)$this->request->getGet('mapel_id');
+        if (!$selectedMapelId && !empty($myMapels)) {
+            $selectedMapelId = (int)$myMapels[0]['id'];
+        }
+
+        $currentMapel = $mapelModel->find($selectedMapelId);
+        $santriNilai = [];
+        if ($currentMapel) {
+            $santriNilai = $mapelModel->getSantriNilaiByMapel($selectedMapelId);
+        }
+
+        $data = [
+            'title'           => 'Kompetensi Kejuruan & Pembobotan Nilai',
+            'myMapels'        => $myMapels,
+            'allMapels'       => $allMapels,
+            'currentMapel'    => $currentMapel,
+            'selectedMapelId' => $selectedMapelId,
+            'santriNilai'     => $santriNilai,
+        ];
+
+        return view('instruktur/kompetensi', $data);
+    }
+
+    /**
+     * Instruktur mengubah bobot nilai: tugas, ujian teori, ujian praktik (project-based)
+     */
+    public function updateBobot()
+    {
+        $mapelModel = new \App\Models\MapelModel();
+        $mapelId    = (int)$this->request->getPost('mapel_id');
+
+        $mapel = $mapelModel->find($mapelId);
+        if (!$mapel) {
+            return redirect()->to(base_url('instruktur/kompetensi'))->with('error', 'Mapel tidak ditemukan.');
+        }
+
+        $bobotTugas   = (float)$this->request->getPost('bobot_tugas');
+        $bobotTeori   = (float)$this->request->getPost('bobot_teori');
+        $bobotPraktik = (float)$this->request->getPost('bobot_praktik');
+
+        $total = $bobotTugas + $bobotTeori + $bobotPraktik;
+        if (abs($total - 100) > 0.01) {
+            return redirect()->to(base_url('instruktur/kompetensi?mapel_id=' . $mapelId))
+                ->with('error', "Total bobot nilai harus tepat 100% (Saat ini: {$total}%).");
+        }
+
+        // Perbarui bobot pada tabel mapel_kompetensi
+        $mapelModel->update($mapelId, [
+            'bobot_tugas'   => $bobotTugas,
+            'bobot_teori'   => $bobotTeori,
+            'bobot_praktik' => $bobotPraktik,
+        ]);
+
+        // Hitung ulang semua nilai akhir santri untuk mapel ini
+        $db = \Config\Database::connect();
+        $allNilai = $db->table('nilai_kompetensi')->where('mapel_id', $mapelId)->get()->getResultArray();
+        foreach ($allNilai as $n) {
+            $t = (float)$n['nilai_tugas'];
+            $te = (float)$n['nilai_teori'];
+            $pr = (float)$n['nilai_praktik'];
+            $newAkhir = round((($t * $bobotTugas) + ($te * $bobotTeori) + ($pr * $bobotPraktik)) / 100, 2);
+            $db->table('nilai_kompetensi')->where('id', $n['id'])->update(['nilai_akhir' => $newAkhir]);
+        }
+
+        // Sinkronkan akumulasi nilai kejuruan ke tabel nilai_santri
+        $db->query("UPDATE nilai_santri s SET nilai_kejuruan = COALESCE((SELECT ROUND(AVG(nk.nilai_akhir), 2) FROM nilai_kompetensi nk WHERE nk.santri_id = s.id), 0.00)");
+
+        return redirect()->to(base_url('instruktur/kompetensi?mapel_id=' . $mapelId))
+            ->with('notif_type', 'edit')
+            ->with('notif_title', 'Bobot Penilaian Berhasil Diubah!')
+            ->with('notif_msg', "Bobot baru: Tugas {$bobotTugas}%, Ujian Teori {$bobotTeori}%, Praktik (Projek) {$bobotPraktik}%. Seluruh nilai akhir santri telah dihitung ulang secara otomatis.");
+    }
+
+    /**
+     * Input & update nilai tugas, teori, dan praktik per santri
+     */
+    public function updateNilaiKompetensi()
+    {
+        $mapelModel = new \App\Models\MapelModel();
+
+        $santriId = (int)$this->request->getPost('santri_id');
+        $mapelId  = (int)$this->request->getPost('mapel_id');
+        $tugas    = (float)$this->request->getPost('nilai_tugas');
+        $teori    = (float)$this->request->getPost('nilai_teori');
+        $praktik  = (float)$this->request->getPost('nilai_praktik');
+        $catatan  = trim((string)$this->request->getPost('catatan'));
+
+        if (!$santriId || !$mapelId) {
+            return redirect()->to(base_url('instruktur/kompetensi'))->with('error', 'Data santri atau mapel tidak valid.');
+        }
+
+        $nilaiAkhir = $mapelModel->saveOrUpdateNilaiKompetensi($santriId, $mapelId, $tugas, $teori, $praktik, $catatan);
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'success'     => true,
+                'nilai_akhir' => $nilaiAkhir,
+                'message'     => 'Nilai kompetensi berhasil disimpan.'
+            ]);
+        }
+
+        return redirect()->to(base_url('instruktur/kompetensi?mapel_id=' . $mapelId))
+            ->with('notif_type', 'add')
+            ->with('notif_title', 'Nilai Kompetensi Disimpan!')
+            ->with('notif_msg', "Nilai tugas ({$tugas}), teori ({$teori}), dan praktik projek ({$praktik}) menghasilkan nilai akhir {$nilaiAkhir}.");
+    }
 }
 

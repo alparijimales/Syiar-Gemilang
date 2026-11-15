@@ -28,6 +28,8 @@ class RoleFilter implements FilterInterface
                     $target = base_url('siswa');
                 } elseif ($userRole === 'wali_santri') {
                     $target = base_url('wali');
+                } elseif ($userRole === 'pendamping_agama') {
+                    $target = base_url('pendamping');
                 }
 
                 return redirect()->to($target)->with('error', 'Akses ditolak! Anda tidak memiliki izin untuk mengakses halaman tersebut.');
