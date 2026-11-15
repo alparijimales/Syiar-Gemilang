@@ -1,23 +1,21 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "public/index.php",
-      "use": "@vercel/php"
+  "functions": {
+    "public/index.php": {
+      "runtime": "vercel-php@0.7.3"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/(manifest\\.json|sw\\.js|service-worker\\.js|favicon\\.ico)",
-      "dest": "/public/$1"
+      "source": "/(manifest\\.json|sw\\.js|service-worker\\.js|favicon\\.ico)",
+      "destination": "/public/$1"
     },
     {
-      "src": "/(assets|css|js|images|icons)/(.*)",
-      "dest": "/public/$1/$2"
+      "source": "/(assets|css|js|images|icons)/(.*)",
+      "destination": "/public/$1/$2"
     },
     {
-      "src": "/(.*)",
-      "dest": "/public/index.php"
+      "source": "/(.*)",
+      "destination": "/public/index.php"
     }
   ]
 }
