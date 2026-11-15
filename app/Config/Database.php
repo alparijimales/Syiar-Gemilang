@@ -194,6 +194,66 @@ class Database extends Config
     {
         parent::__construct();
 
+        // 1. Dukungan format URL database (DATABASE_URL / JAWSDB_URL / CLEARDB_DATABASE_URL)
+        $dbUrl = getenv('DATABASE_URL') ?: getenv('JAWSDB_URL') ?: getenv('CLEARDB_DATABASE_URL');
+        if ($dbUrl) {
+            $parsed = parse_url($dbUrl);
+            if ($parsed) {
+                if (!empty($parsed['host'])) {
+                    $this->default['hostname'] = $parsed['host'];
+                }
+                if (!empty($parsed['user'])) {
+                    $this->default['username'] = $parsed['user'];
+                }
+                if (isset($parsed['pass'])) {
+                    $this->default['password'] = $parsed['pass'];
+                }
+                if (!empty($parsed['port'])) {
+                    $this->default['port'] = (int) $parsed['port'];
+                }
+                if (!empty($parsed['path'])) {
+                    $this->default['database'] = ltrim($parsed['path'], '/');
+                }
+            }
+        }
+
+        // 2. Dukungan Environment Variables standar (tanpa titik, kompatibel dengan Vercel Dashboard)
+        $host = getenv('DB_HOST') ?: getenv('DB_HOSTNAME') ?: getenv('database_default_hostname');
+        if ($host) {
+            $this->default['hostname'] = $host;
+        }
+
+        $user = getenv('DB_USER') ?: getenv('DB_USERNAME') ?: getenv('database_default_username');
+        if ($user) {
+            $this->default['username'] = $user;
+        }
+
+        $pass = getenv('DB_PASS') ?: getenv('DB_PASSWORD') ?: getenv('database_default_password');
+        if ($pass !== false && $pass !== null && $pass !== '') {
+            $this->default['password'] = $pass;
+        }
+
+        $name = getenv('DB_NAME') ?: getenv('DB_DATABASE') ?: getenv('database_default_database');
+        if ($name) {
+            $this->default['database'] = $name;
+        }
+
+        $port = getenv('DB_PORT') ?: getenv('database_default_port');
+        if ($port) {
+            $this->default['port'] = (int) $port;
+        }
+
+        $driver = getenv('DB_DRIVER') ?: getenv('database_default_DBDriver');
+        if ($driver) {
+            $this->default['DBDriver'] = $driver;
+        }
+
+        // Dukungan SSL untuk Cloud Database (TiDB, Aiven, Supabase, Neon, PlanetScale)
+        $ssl = getenv('DB_SSL') ?: getenv('DB_ENCRYPT');
+        if ($ssl === 'true' || $ssl === '1') {
+            $this->default['encrypt'] = true;
+        }
+
         // Ensure that we always set the database group to 'tests' if
         // we are currently running an automated test suite, so that
         // we don't overwrite live data on accident.

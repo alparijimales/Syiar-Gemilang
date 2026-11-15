@@ -53,8 +53,32 @@ class Paths
      * for maximum security, keeping it out of the app and/or
      * system directories.
      */
-    // public string $writableDirectory = __DIR__ . '/../../writable';
-    public string $writableDirectory = '/tmp';
+    public string $writableDirectory;
+
+    public function __construct()
+    {
+        $defaultWritable = realpath(__DIR__ . '/../../writable') ?: (__DIR__ . '/../../writable');
+
+        // Gunakan /tmp jika berjalan di Vercel atau jika folder writable default tidak bisa ditulis
+        if (isset($_SERVER['VERCEL']) || getenv('VERCEL') || !is_writable($defaultWritable)) {
+            $this->writableDirectory = sys_get_temp_dir() . '/writable';
+        } else {
+            $this->writableDirectory = $defaultWritable;
+        }
+
+        // Pastikan folder writable beserta subfoldernya selalu ada dan bisa ditulisi
+        if (!is_dir($this->writableDirectory)) {
+            @mkdir($this->writableDirectory, 0777, true);
+        }
+
+        $subdirs = ['cache', 'logs', 'session', 'debugbar', 'uploads'];
+        foreach ($subdirs as $subdir) {
+            $dir = $this->writableDirectory . DIRECTORY_SEPARATOR . $subdir;
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0777, true);
+            }
+        }
+    }
 
     /**
      * ---------------------------------------------------------------

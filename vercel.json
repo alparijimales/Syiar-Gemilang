@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "functions": {
     "api/index.php": {
       "runtime": "vercel-php@0.7.3"
@@ -6,12 +7,12 @@
   },
   "rewrites": [
     {
-      "source": "/(manifest\\.json|sw\\.js|service-worker\\.js|favicon\\.ico)",
-      "destination": "/public/$1"
+      "source": "/(assets|uploads|css|js|images|icons|fonts)/(.*)",
+      "destination": "/public/$1/$2"
     },
     {
-      "source": "/(assets|css|js|images|icons)/(.*)",
-      "destination": "/public/$1/$2"
+      "source": "/(manifest\\.json|sw\\.js|service-worker\\.js|favicon\\.ico|favicon\\.png|robots\\.txt)",
+      "destination": "/public/$1"
     },
     {
       "source": "/(.*)",

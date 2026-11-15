@@ -31,6 +31,27 @@ class App extends BaseConfig
      */
     public array $allowedHostnames = ['127.0.0.1', 'localhost', '::1'];
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        // 1. Dukungan environment variable baseURL (kompatibel Vercel tanpa titik)
+        $envBaseUrl = getenv('APP_BASE_URL') ?: getenv('app_baseURL');
+        if ($envBaseUrl) {
+            $this->baseURL = rtrim($envBaseUrl, '/') . '/';
+        } elseif (isset($_SERVER['VERCEL_URL']) && !empty($_SERVER['VERCEL_URL'])) {
+            $this->baseURL = 'https://' . rtrim($_SERVER['VERCEL_URL'], '/') . '/';
+        }
+
+        // 2. Otomatis daftarkan host saat ini ke allowedHostnames agar aman untuk preview/custom domain
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $host = explode(':', $_SERVER['HTTP_HOST'])[0];
+            if (!in_array($host, $this->allowedHostnames, true)) {
+                $this->allowedHostnames[] = $host;
+            }
+        }
+    }
+
     /**
      * --------------------------------------------------------------------------
      * Index File
