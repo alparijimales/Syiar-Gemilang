@@ -724,8 +724,8 @@ $notifUrl   = (session()->get('role') === 'pendamping_agama') ? base_url('pendam
     <aside id="appSidebar" class="fixed inset-y-0 left-0 z-50 text-slate-200 flex flex-col shrink-0 select-none lg:static">
         
         <!-- 1. HEADER LOGO & DYNAMIC ISLAND -->
-        <div class="sidebar-header h-[74px] px-5 flex items-center justify-between border-b border-white/10 shrink-0 relative z-40">
-            <div class="flex items-center gap-3.5">
+        <div class="sidebar-header h-[74px] px-4 sm:px-5 flex items-center justify-between border-b border-white/10 shrink-0 relative z-40 gap-2.5">
+            <div class="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
                 
                 <!-- Dynamic Island Container -->
                 <div id="dynamicIslandWrapper" class="relative w-[46px] h-[46px] shrink-0">
@@ -762,14 +762,14 @@ $notifUrl   = (session()->get('role') === 'pendamping_agama') ? base_url('pendam
                 </div>
 
                 <!-- Judul Brand (Tampil saat mode Sidebar Penuh / Mobile) -->
-                <div class="sidebar-header-brand leading-tight truncate">
-                    <span class="font-extrabold text-white text-[17px] tracking-tight block sg-display">Syiar Gemilang</span>
-                    <span class="text-[11px] text-[#8ab4d8] font-medium block mt-0.5">Rumah Gemilang Indonesia</span>
+                <div class="sidebar-header-brand min-w-0 flex-1 leading-tight overflow-hidden">
+                    <span class="font-extrabold text-white text-[16px] tracking-tight block truncate sg-display">Syiar Gemilang</span>
+                    <span class="text-[11px] text-[#8ab4d8] font-medium block truncate mt-0.5">Rumah Gemilang Indonesia</span>
                 </div>
             </div>
 
             <!-- Tombol Tutup Mobile & Toggle Mode Sidebar -->
-            <div class="sidebar-header-actions flex items-center gap-1">
+            <div class="sidebar-header-actions flex items-center gap-1.5 shrink-0">
                 <button type="button" onclick="toggleMobileSidebar()" class="lg:hidden w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer" aria-label="Tutup Menu">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
@@ -989,12 +989,12 @@ $notifUrl   = (session()->get('role') === 'pendamping_agama') ? base_url('pendam
         <!-- 4. FOOTER PROFIL USER ("AS") & POPUP MENU -->
         <div class="sidebar-footer px-4 py-4 shrink-0 relative z-40">
             <div class="sidebar-profile-box flex items-center justify-between gap-2.5">
-                <div class="flex items-center gap-3 overflow-visible">
+                <div class="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
                     
                     <!-- Lingkaran Inisial User Aktif ("AS") -->
                     <button type="button" id="railProfileTrigger" onclick="toggleProfilePopup(event)"
                             title="<?= esc($userName); ?> - Klik untuk opsi akun"
-                            class="w-11 h-11 rounded-full bg-[#13466b] hover:bg-[#0077cc] text-white font-bold text-sm flex items-center justify-center shrink-0 transition shadow-sm cursor-pointer overflow-hidden focus:outline-none">
+                            class="w-10 h-10 rounded-full bg-[#13466b] hover:bg-[#0077cc] text-white font-bold text-sm flex items-center justify-center shrink-0 transition shadow-sm cursor-pointer overflow-hidden focus:outline-none">
                         <?php if (session()->has('avatar') && !empty(session()->get('avatar'))): ?>
                             <img src="<?= esc(session()->get('avatar')); ?>" alt="<?= esc($userName); ?>" class="w-full h-full object-cover">
                         <?php else: ?>
@@ -1003,10 +1003,10 @@ $notifUrl   = (session()->get('role') === 'pendamping_agama') ? base_url('pendam
                     </button>
 
                     <!-- Info Nama & Badge Role (Tampil saat mode Sidebar Penuh) -->
-                    <div class="sidebar-profile-info overflow-hidden leading-tight">
+                    <div class="sidebar-profile-info min-w-0 flex-1 leading-tight overflow-hidden">
                         <h4 class="text-[13px] font-bold text-white truncate"><?= esc($userName); ?></h4>
-                        <div class="mt-1">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#0c3554] text-[#9cc0e0] border border-[#255c85]">
+                        <div class="mt-0.5">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[9.5px] font-bold bg-[#0c3554] text-[#9cc0e0] border border-[#255c85] uppercase tracking-wider truncate max-w-full">
                                 <?= esc(ucfirst(strtolower(session()->get('role') ?? 'Admin'))); ?>
                             </span>
                         </div>
@@ -1014,9 +1014,9 @@ $notifUrl   = (session()->get('role') === 'pendamping_agama') ? base_url('pendam
                 </div>
 
                 <!-- Tombol Logout di Sisi Kanan (Tampil saat mode Sidebar Penuh) -->
-                <div class="sidebar-profile-actions flex items-center gap-1.5">
+                <div class="sidebar-profile-actions flex items-center shrink-0">
                     <button type="button" onclick="openLogoutModal()" title="Keluar / Logout" 
-                       class="w-9 h-9 rounded-xl bg-[#072c47] hover:bg-rose-600 text-white flex items-center justify-center transition shrink-0 cursor-pointer shadow-sm">
+                       class="w-8 h-8 rounded-xl bg-[#072c47] hover:bg-rose-600 text-white flex items-center justify-center transition shrink-0 cursor-pointer shadow-sm">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <polyline points="16 17 21 12 16 7"/>
